@@ -6,7 +6,7 @@
 	url = https://github.com/sandyre/libopencad.git
 [submodule "third_party/kaguya"]
 	path = third_party/kaguya
-	url = https://github.com/satoren/kaguya.git
+	url = https://github.com/WojMatysz/kaguya.git
 	branch = main
 [submodule "lckernel/tinyspline"]
 	path = lckernel/tinyspline
