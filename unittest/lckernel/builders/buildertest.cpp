@@ -102,7 +102,7 @@ TEST(BuilderTest, Point) {
     builder.setBlock(block);
     auto point = builder.build();
 
-    EXPECT_EQ(coordinate, *point);
+    EXPECT_EQ(coordinate, (lc::geo::Coordinate&)(*point)); // Issue with comparing 2 different types Coordinate and Point! Composition over inheritance! eh! Quick unsafe test fix.
     EXPECT_EQ(layer, point->layer());
     EXPECT_EQ(metaInfo, point->metaInfo());
     EXPECT_EQ(block, point->block());

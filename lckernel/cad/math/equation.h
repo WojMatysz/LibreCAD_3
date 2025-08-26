@@ -17,7 +17,7 @@ public:
 
     Equation &operator=(const Equation& qm);
 
-    Equation(Eigen::Matrix3d &mat);
+    Equation(const Eigen::Matrix3d &mat);
 
     /**
      * @brief creates a new quadratic Equation
