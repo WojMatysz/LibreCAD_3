@@ -7,13 +7,14 @@
 #include <cad/logger/logger.h>
 #include "widgets/guiAPI/menu.h"
 #include "managers/contextmenumanager.h"
+#include "../lcviewernoqt/glewBindings.hpp"
 
 using namespace lc;
+struct GlewBindings;
 using namespace lc::ui;
 
 LCADViewer::LCADViewer(QWidget *parent) :
-    QOpenGLWidget(parent),
-    _docCanvas(nullptr),
+    QOpenGLWidget(parent), _docCanvas(nullptr),
     _mouseScrollKeyActive(false),
     _operationActive(false),
     _scale(1.0),
@@ -109,41 +110,24 @@ LCADViewer::~LCADViewer()
 void LCADViewer::initializeGL()
 {
     QOpenGLWidget::makeCurrent();
-    QOpenGLContext *CC= QOpenGLContext::currentContext();
+    QOpenGLContext * context= QOpenGLContext::currentContext();
 
-    QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
+    QOpenGLDebugLogger * logger = new QOpenGLDebugLogger(this);
     logger->initialize();
 
     connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
     logger->startLogging();
 
 
-    int width = size().width();
-    int height = size().height();
-
-    if (CC != 0)
+    if (context)
     {
-        GLenum err = glewInit();
-
-        if (err != GLEW_OK) {
-            LOG_ERROR << "GLEW Error: " << glewGetErrorString(err) << std::endl;
-            exit(1);
-        }
-        if (!GLEW_VERSION_2_1) {
-            LOG_ERROR << "OpenGL version 2.1 is not available" << std::endl;
-            exit(1);
-        }
-
-        deletePainters();
-        createPainters(width, height);
-        _documentPainter->create_resources();
-    }
-
-    else
-    {
+        lc::viewer::GlewBindings glew{};
+        int width = size().width();
+        int height = size().height();
         deletePainters();
         createPainters(width, height);
     }
+    _documentPainter->create_resources();
 }
 
 

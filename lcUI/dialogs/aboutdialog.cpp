@@ -2,6 +2,7 @@
 #include <QPushButton>
 #include <QClipboard>
 #include <QApplication>
+#include <QOpenGLContext>
 
 #include "aboutdialog.h"
 
@@ -18,7 +19,6 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
-#include <GL/glew.h>
 
 struct outputConfig {
     QString lineFormat;	// 1: field name, 2: value
@@ -155,10 +155,11 @@ QString getLuaVersion() {
 
 QString getGLVersion() {
     //Assume init is already called
-    int gl_major = 0;
-    int gl_minor = 0;
-    glGetIntegerv(GL_MAJOR_VERSION, &gl_major);
-    glGetIntegerv(GL_MINOR_VERSION, &gl_minor);
+    QOpenGLContext * context = QOpenGLContext::currentContext();
+    if (!context) return "ERROR: No current OpenGL context";
+    QSurfaceFormat format = context->format();
+    int gl_major = format.majorVersion();
+    int gl_minor = format.minorVersion();
     return QString("%1.%2").arg(gl_major).arg(gl_minor);
 }
 

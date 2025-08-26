@@ -92,7 +92,8 @@ managers/hookmanager.h
 managers/contextmenumanager.h
 managers/copymanager.h
 managers/metainfomanager.cpp
-managers/metainfomanager.h)
+managers/metainfomanager.h
+../lcviewernoqt/glewBindings.hpp)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -163,7 +164,8 @@ managers/uisettings.cpp
 managers/contextmenumanager.cpp
 managers/copymanager.cpp
 managers/metainfomanager.cpp
-managers/metainfomanager.h)
+managers/metainfomanager.h
+../lcviewernoqt/glewBindings.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui

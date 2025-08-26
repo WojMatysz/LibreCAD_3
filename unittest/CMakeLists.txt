@@ -128,6 +128,7 @@ if(WITH_QT_UI)
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
 
     #Lua
     find_package(Lua 5.3 EXACT REQUIRED)
@@ -148,6 +149,7 @@ if(WITH_RENDERING_UNITTESTS)
         ${EXTRA_LIBS}
         ${Boost_LIBRARIES}
         glfw
+        lcviewernoqt
     )
 
     set(src

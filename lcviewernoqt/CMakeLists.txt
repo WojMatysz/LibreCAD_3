@@ -58,7 +58,7 @@ painters/opengl/cacher.cpp
 painters/opengl/renderer.cpp
 painters/opengl/shader.cpp
 painters/opengl/resources/res.cpp
-
+glewBindings.hpp
 )
 
 # HEADER FILES
@@ -126,6 +126,7 @@ painters/opengl/cacher.h
 painters/opengl/renderer.h
 painters/opengl/shader.h
 painters/opengl/resources/res.h
+glewBindings.hpp
 )
 
 cmake_policy(SET CMP0074 OLD)
