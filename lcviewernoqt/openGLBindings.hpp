@@ -8,9 +8,9 @@ namespace lc
 namespace viewer
 {
 
-struct GlewBindings
+struct OpenGLBindings
 {
-    explicit GlewBindings();
+    explicit OpenGLBindings();
 };
 
 }

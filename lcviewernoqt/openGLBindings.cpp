@@ -1,4 +1,4 @@
-#include "glewBindings.hpp"
+#include "openGLBindings.hpp"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -9,7 +9,7 @@ namespace lc
 namespace viewer
 {
 
-GlewBindings::GlewBindings()
+OpenGLBindings::OpenGLBindings()
 {
     GLenum err = glewInit();
     if (err != GLEW_OK) 

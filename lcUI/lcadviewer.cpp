@@ -7,10 +7,9 @@
 #include <cad/logger/logger.h>
 #include "widgets/guiAPI/menu.h"
 #include "managers/contextmenumanager.h"
-#include "../lcviewernoqt/glewBindings.hpp"
+#include "../lcviewernoqt/openGLBindings.hpp"
 
 using namespace lc;
-struct GlewBindings;
 using namespace lc::ui;
 
 LCADViewer::LCADViewer(QWidget *parent) :
@@ -121,7 +120,7 @@ void LCADViewer::initializeGL()
 
     if (context)
     {
-        lc::viewer::GlewBindings glew{};
+        lc::viewer::OpenGLBindings{};
         int width = size().width();
         int height = size().height();
         deletePainters();
