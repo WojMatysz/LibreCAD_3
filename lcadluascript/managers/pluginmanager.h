@@ -6,7 +6,7 @@ extern "C" {
 #include "lauxlib.h"
 }
 
-#include <map>
+#include <filesystem>
 
 namespace lc {
 namespace lua {
@@ -20,7 +20,7 @@ public:
     void loadPlugins();
 
 private:
-    void loadPlugin(const char* file);
+    void loadPlugin(std::filesystem::path file);
 
     lua_State* _L;
     const char* _interface;
