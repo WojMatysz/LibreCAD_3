@@ -21,7 +21,7 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua(QMainWindow* mainWindow) {
-    auto lcLua = lc::lua::LCLua(_L.state());
+    auto lcLua = lc::lua::LCLua(_L);
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();

@@ -1,18 +1,21 @@
 #pragma once
 
+/*
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+*/
 
 #include <cad/storage/document.h>
+#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace lua {
 class LCLua {
 public:
-    LCLua(lua_State* L);
+    LCLua(kaguya::State & luaVM);
 
     /**
      * @brief Bind Lua functions and others functions required by LibreCAD
@@ -35,7 +38,7 @@ public:
     static void write(FILE* file, const char* content);
 
 private:
-    lua_State* _L;
+    kaguya::State & m_luaVM;
 
     FILE* (* _f_openFileDialog)(bool, const char*, const char*);
 };

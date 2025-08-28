@@ -12,7 +12,7 @@ LuaScript::LuaScript(lc::ui::MainWindow* mainWindow) :
     _cliCommand(mainWindow->cliCommand()) {
     ui->setupUi(this);
 
-    auto lcLua = lc::lua::LCLua(luaState.state());
+    auto lcLua = lc::lua::LCLua(luaState);
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
@@ -26,7 +26,7 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    auto lcLua = lc::lua::LCLua(luaState.state());
+    auto lcLua = lc::lua::LCLua(luaState);
     lcLua.setDocument(_mdiChild->document());
 
     auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());

@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
     lc::lua::PluginManager pluginManager(luaState, "cli");
     pluginManager.loadPlugins();
 
-    auto lcLua = lc::lua::LCLua(luaState.state());
+    auto lcLua = lc::lua::LCLua(luaState);
     lcLua.setF_openFileDialog(&openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();

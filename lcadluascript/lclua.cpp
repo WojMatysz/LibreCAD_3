@@ -1,5 +1,6 @@
-#include <cad/storage/document.h>
 #include "lclua.h"
+#include <cad/storage/document.h>
+
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
 #include <kaguya/kaguya.hpp>
@@ -15,22 +16,12 @@
 
 using namespace lc::lua;
 
-static const luaL_Reg loadedlibs[] = {
-    {"_G", luaopen_base},
-    {LUA_LOADLIBNAME, luaopen_package},
-    {LUA_COLIBNAME, luaopen_coroutine},
-    {LUA_TABLIBNAME, luaopen_table},
-    {LUA_STRLIBNAME, luaopen_string},
-    {LUA_MATHLIBNAME, luaopen_math},
-    {nullptr, nullptr}
-};
 
-LCLua::LCLua(lua_State* L) :
-    _L(L),
+LCLua::LCLua(kaguya::State & luaVM) :
+    m_luaVM(luaVM),
     _f_openFileDialog(nullptr) {
 
-    kaguya::State s(_L);
-    s["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
+    m_luaVM["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
         LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
     });
 }
@@ -38,17 +29,25 @@ LCLua::LCLua(lua_State* L) :
 void LCLua::addLuaLibs() {
     const luaL_Reg *lib;
 
-    for (lib = loadedlibs; lib->func != nullptr; lib++) {
-        luaL_requiref(_L, lib->name, lib->func, 1);
-        lua_pop(_L, 1);
-    }
+    
+    /* Originaly only those libs are loaded
+       static const luaL_Reg loadedlibs[] = {
+       {"_G", luaopen_base},
+       {LUA_LOADLIBNAME, luaopen_package},
+       {LUA_COLIBNAME, luaopen_coroutine},
+       {LUA_TABLIBNAME, luaopen_table},
+       {LUA_STRLIBNAME, luaopen_string},
+       {LUA_MATHLIBNAME, luaopen_math},
+       {nullptr, nullptr}
+       };
+       */
+    m_luaVM.openlibs(); // Loads all stadndard libs
 
     //Add others non-LC tools
-    kaguya::State s(_L);
-    s["microtime"].setFunction(&lua_microtime);
-    s["openFile"].setFunction(&openFile);
+    m_luaVM["microtime"].setFunction(&lua_microtime);
+    m_luaVM["openFile"].setFunction(&openFile);
 
-    s["FILE"].setClass(kaguya::UserdataMetatable<FILE>()
+    m_luaVM["FILE"].setClass(kaguya::UserdataMetatable<FILE>()
     .addStaticFunction("read", [](FILE* file, const size_t len) {
         return read(file, len);
     })
@@ -58,30 +57,29 @@ void LCLua::addLuaLibs() {
                       );
 
     if(_f_openFileDialog == nullptr) {
-        s["openFileDialog"].setFunction([]() {
+        m_luaVM["openFileDialog"].setFunction([]() {
             return (FILE*) nullptr;
         });
     }
     else {
-        s["openFileDialog"].setFunction(_f_openFileDialog);
+        m_luaVM["openFileDialog"].setFunction(_f_openFileDialog);
     }
 }
 
 void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
-    kaguya::State state(_L);
-    state["document"] = document;
+    m_luaVM["document"] = document;
 }
 
-std::string LCLua::runString(const char* code) {
-    std::string out;
-
-    auto s = luaL_dostring(_L, code);
-    if (s) {
-        out.append(lua_tostring(_L, -1));
-        lua_pop(_L, 1);
+std::string LCLua::runString(const char* code) 
+{
+    try {
+        m_luaVM.dostring(code);
+        return "";
+    } 
+    catch(const kaguya::LuaException & e) {
+        std::cerr << "Lua error: " << e.what() << "\n";
+        return e.what();
     }
-
-    return out;
 }
 
 FILE* LCLua::openFile(const char* path, const char* mode) {
@@ -110,15 +108,13 @@ void LCLua::setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, co
 }
 
 void LCLua::importLCKernel() {
-    kaguya::State state(_L);
-
-    import_lc_namespace(state);
-    import_lc_geo_namespace(state);
-    import_lc_meta_namespace(state);
-    import_lc_entity_namespace(state);
-    import_lc_builder_namespace(state);
-    import_lc_storage_namespace(state);
-    import_lc_maths_namespace(state);
-    import_lc_event_namespace(state);
-    import_lc_operation_namespace(state);
+    import_lc_namespace(m_luaVM);
+    import_lc_geo_namespace(m_luaVM);
+    import_lc_meta_namespace(m_luaVM);
+    import_lc_entity_namespace(m_luaVM);
+    import_lc_builder_namespace(m_luaVM);
+    import_lc_storage_namespace(m_luaVM);
+    import_lc_maths_namespace(m_luaVM);
+    import_lc_event_namespace(m_luaVM);
+    import_lc_operation_namespace(m_luaVM);
 }
