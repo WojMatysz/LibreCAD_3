@@ -1,14 +1,10 @@
 #include "pluginmanager.h"
-#include <kaguya/kaguya.hpp>
 
 using namespace lc::lua;
 
-PluginManager::PluginManager(lua_State* l, const char* interface) :
-    _L(l),
-    _interface(interface) {
-
-}
-
+PluginManager::PluginManager(kaguya::State & luaVM, const std::string & interface) :
+    m_luaVirtualMachine(luaVM),
+    m_interface(interface) {}
 
 
 void PluginManager::loadPlugins() 
@@ -39,13 +35,13 @@ void PluginManager::loadPlugins()
     }
 }
 
+
 void PluginManager::loadPlugin(std::filesystem::path file) 
 {
-    kaguya::State state(_L);
-    state["LC_interface"] = _interface;
+    m_luaVirtualMachine["LC_interface"] = m_interface;
 
-    if (state.dofile(file.c_str())) {
-        kaguya::LuaRef result = state["_RESULT"];
+    if (m_luaVirtualMachine.dofile(file.c_str())) {
+        kaguya::LuaRef result = m_luaVirtualMachine["_RESULT"];
         if (result && result.isType<std::string>()) {
             std::cout << result.get<std::string>() << "\n";
         }

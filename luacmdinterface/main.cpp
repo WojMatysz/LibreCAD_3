@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
     // Render Lua Code
     kaguya::State luaState;
 
-    lc::lua::PluginManager pluginManager(luaState.state(), "cli");
+    lc::lua::PluginManager pluginManager(luaState, "cli");
     pluginManager.loadPlugins();
 
     auto lcLua = lc::lua::LCLua(luaState.state());
