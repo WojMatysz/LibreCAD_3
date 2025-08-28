@@ -55,6 +55,7 @@ endif ()
 #Lua
 find_package(Lua 5.3 EXACT REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
+include_directories(${SOL2})
 
 # Logging
 find_package(Boost REQUIRED COMPONENTS log)

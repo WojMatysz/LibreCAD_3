@@ -265,7 +265,8 @@ set(EXTRA_LIBS
         Qt5::UiTools
         Qt5::OpenGL
 		Qt5::Svg
-        ${APR_LIBRARIES})
+        ${APR_LIBRARIES}
+        ${SOL2})
 
 #Create library for unit tests
 if(WITH_UNITTESTS)

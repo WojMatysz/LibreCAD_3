@@ -3,6 +3,7 @@
 #include <lclua.h>
 #include <cad/builders/insert.h>
 #include <kaguya/include/kaguya/lua_ref.hpp>
+#include "sol.hpp"
 
 namespace lc {
 namespace entity {

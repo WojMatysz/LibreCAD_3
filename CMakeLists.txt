@@ -16,6 +16,9 @@ option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
+#Define SOL2 variable
+set(SOL2 "${CMAKE_CURRENT_SOURCE_DIR}/third_party/sol2/include")
+
 # Define compiler warnings
 if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
