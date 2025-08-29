@@ -30,6 +30,9 @@ find_package(Lua 5.3 EXACT REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
+#SOL2
+include_directories(${SOL2})
+
 set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")

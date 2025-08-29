@@ -2,7 +2,7 @@
 
 using namespace lc::lua;
 
-PluginManager::PluginManager(kaguya::State & luaVM, const std::string & interface) :
+PluginManager::PluginManager(sol::state & luaVM, const std::string & interface) :
     m_luaVirtualMachine(luaVM),
     m_interface(interface) {}
 
@@ -29,22 +29,23 @@ void PluginManager::loadPlugins()
             }
         }
     } 
-    catch (const fs::filesystem_error& e) 
+    catch(const fs::filesystem_error& e) 
     {
         std::cerr << "Error accessing plugins directory:\n" << e.what() << "\n";
     }
 }
 
-
 void PluginManager::loadPlugin(std::filesystem::path file) 
 {
     m_luaVirtualMachine["LC_interface"] = m_interface;
 
-    if (m_luaVirtualMachine.dofile(file.c_str())) {
-        kaguya::LuaRef result = m_luaVirtualMachine["_RESULT"];
-        if (result && result.isType<std::string>()) {
-            std::cout << result.get<std::string>() << "\n";
-        }
+    try 
+    {
+        m_luaVirtualMachine.script_file(file.string());
+        std::cout << "Plugin: " << file << " loaded to LuaVM\n";
+    } 
+    catch(const sol::error& e) {
+        std::cerr << "Failed to load plugin: " << file << "\n"
+                  << e.what() << "\n";
     }
-    else std::cerr << "Failed to load plugin: " << file << "\n";
 }

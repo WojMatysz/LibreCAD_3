@@ -3,7 +3,6 @@
 
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
-#include <kaguya/kaguya.hpp>
 
 #include <bridge/lc.h>
 #include <bridge/lc_geo.h>
@@ -18,54 +17,34 @@
 using namespace lc::lua;
 
 
-LCLua::LCLua(kaguya::State & luaVM) :
+LCLua::LCLua(sol::state & luaVM) :
     m_luaVM(luaVM),
-    _f_openFileDialog(nullptr) {
+    m_f_openFileDialog(nullptr) 
+{
 
-    m_luaVM["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
+    m_luaVM.set_function("registerPlugin", [](const std::string & name, sol::function onNewWaitingEntityFunction) {
         LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
-    });
+            });
 }
 
 void LCLua::addLuaLibs() {
-    const luaL_Reg *lib;
+    //const luaL_Reg *lib;
 
-    
-    /* Originaly only those libs are loaded
-       static const luaL_Reg loadedlibs[] = {
-       {"_G", luaopen_base},
-       {LUA_LOADLIBNAME, luaopen_package},
-       {LUA_COLIBNAME, luaopen_coroutine},
-       {LUA_TABLIBNAME, luaopen_table},
-       {LUA_STRLIBNAME, luaopen_string},
-       {LUA_MATHLIBNAME, luaopen_math},
-       {nullptr, nullptr}
-       };
-       */
-
-    m_luaVM.openlibs(); // Loads all stadndard libs
+    m_luaVM.open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine,
+                           sol::lib::table, sol::lib::string, sol::lib::math);
 
     //Add others non-LC tools
-    m_luaVM["microtime"].setFunction(&lua_microtime);
-    m_luaVM["openFile"].setFunction(&openFile);
+    m_luaVM.set_function("microtime", &lua_microtime);
+    m_luaVM.set_function("openFile", &openFile);
 
-    m_luaVM["FILE"].setClass(kaguya::UserdataMetatable<FILE>()
-    .addStaticFunction("read", [](FILE* file, const size_t len) {
-        return read(file, len);
-    })
-    .addStaticFunction("write", [](FILE* file, const char* content) {
-        return write(file, content);
-    })
-                      );
+    m_luaVM.new_usertype<FILE>("FILE", 
+        // bind functions
+        "read", [](FILE * file, const std::size_t len) { return read(file, len); },
+        "write", [](FILE * file, const char * content) { return write(file, content); }
+        );
 
-    if(_f_openFileDialog == nullptr) {
-        m_luaVM["openFileDialog"].setFunction([]() {
-            return (FILE*) nullptr;
-        });
-    }
-    else {
-        m_luaVM["openFileDialog"].setFunction(_f_openFileDialog);
-    }
+    if(m_f_openFileDialog) m_luaVM.set_function("openFileDialog", m_f_openFileDialog);
+    else m_luaVM.set_function("openFileDialog", []() -> FILE * { return nullptr; });
 }
 
 void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
@@ -75,10 +54,10 @@ void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
 std::string LCLua::runString(const char* code) 
 {
     try {
-        m_luaVM.dostring(code);
+        m_luaVM.script(code);
         return "";
     } 
-    catch(const kaguya::LuaException & e) {
+    catch(const sol::error & e) {
         std::cerr << "Lua error: " << e.what() << "\n";
         return e.what();
     }
@@ -106,7 +85,7 @@ void LCLua::write(FILE* file, const char* content) {
 }
 
 void LCLua::setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*)) {
-    _f_openFileDialog = f_openFileDialog;
+    m_f_openFileDialog = f_openFileDialog;
 }
 
 void LCLua::importLCKernel() {

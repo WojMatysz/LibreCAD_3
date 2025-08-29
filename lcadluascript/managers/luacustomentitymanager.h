@@ -8,9 +8,9 @@ namespace lua {
 class LuaCustomEntityManager {
 public:
     static LuaCustomEntityManager& getInstance() {
-        static LuaCustomEntityManager _instance;
+        static LuaCustomEntityManager m_instance;
 
-        return _instance;
+        return m_instance;
     }
 
     LuaCustomEntityManager(LuaCustomEntityManager const&) = delete;
@@ -24,7 +24,7 @@ public:
      * @param name Name of the plugin
      * @param onNewWaitingEntityFunction Function called when there are entities which needs to be recreated by the plugin
      */
-    void registerPlugin(const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction);
+    void registerPlugin(const std::string& name, sol::function onNewWaitingEntityFunction);
 
     /**
      * @brief Remove all registered plugins
@@ -37,7 +37,7 @@ private:
 
     void onNewWaitingEntity(const lc::event::NewWaitingCustomEntityEvent& event);
 
-    std::map<std::string, kaguya::LuaRef> _plugins;
+    std::map<std::string, sol::function> m_plugins;
 };
 }
 }

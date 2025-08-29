@@ -2,6 +2,7 @@
 
 #include <cad/storage/documentimpl.h>
 #include <fstream>
+#include "sol.hpp"
 
 #include <cad/storage/storagemanagerimpl.h>
 #include <documentcanvas.h>
@@ -181,7 +182,8 @@ int main(int argc, char** argv) {
     lcPainter->new_device_size(width, height);
 
     // Render Lua Code
-    kaguya::State luaState;
+    //kaguya::State luaState;
+    sol::state luaState;
 
     lc::lua::PluginManager pluginManager(luaState, "cli");
     pluginManager.loadPlugins();

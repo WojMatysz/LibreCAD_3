@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc 
 {
@@ -12,14 +12,14 @@ namespace lua
 class PluginManager 
 {
 public:
-    PluginManager(kaguya::State & luaVM, const std::string & interface);
+    PluginManager(sol::state & luaVM, const std::string & interface);
 
     void loadPlugins();
 
 private:
     void loadPlugin(std::filesystem::path file);
 
-    kaguya::State & m_luaVirtualMachine;
+    sol::state & m_luaVirtualMachine;
     const std::string m_interface;
 };
 

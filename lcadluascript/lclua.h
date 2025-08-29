@@ -1,13 +1,13 @@
 #pragma once
 
 #include <cad/storage/document.h>
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc {
 namespace lua {
 class LCLua {
 public:
-    LCLua(kaguya::State & luaVM);
+    LCLua(sol::state & luaVM);
 
     /**
      * @brief Bind Lua functions and others functions required by LibreCAD
@@ -30,9 +30,9 @@ public:
     static void write(FILE* file, const char* content);
 
 private:
-    kaguya::State & m_luaVM;
+    sol::state & m_luaVM;
 
-    FILE* (* _f_openFileDialog)(bool, const char*, const char*);
+    FILE* (* m_f_openFileDialog)(bool, const char*, const char*);
 };
 }
 }

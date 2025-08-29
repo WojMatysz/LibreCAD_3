@@ -200,6 +200,9 @@ else()
     include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
+# SOL2
+include_directories(${SOL2})
+
 # Boost logging
 find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
 FIND_PACKAGE ( Threads )
