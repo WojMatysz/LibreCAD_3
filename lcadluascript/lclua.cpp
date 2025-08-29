@@ -4,6 +4,7 @@
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
 #include <kaguya/kaguya.hpp>
+
 #include <bridge/lc.h>
 #include <bridge/lc_geo.h>
 #include <bridge/lc_meta.h>
@@ -41,6 +42,7 @@ void LCLua::addLuaLibs() {
        {nullptr, nullptr}
        };
        */
+
     m_luaVM.openlibs(); // Loads all stadndard libs
 
     //Add others non-LC tools

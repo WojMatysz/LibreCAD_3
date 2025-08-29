@@ -6,22 +6,22 @@ using namespace entity;
 
 LuaCustomEntity::LuaCustomEntity(const lc::builder::CustomEntityBuilder& builder) :
     CustomEntity(builder),
-    _snapPoints(builder.snapFunction()),
-    _nearestPoint(builder.nearestPointFunction()),
-    _dragPoints(builder.dragPointsFunction()),
-    _newDragPoint(builder.newDragPointFunction()),
-    _dragPointClick(builder.dragPointsClickedFunction()),
-    _dragPointRelease(builder.dragPointsReleasedFunction()) {
+    m_snapPoints(builder.snapFunction()),
+    m_nearestPoint(builder.nearestPointFunction()),
+    m_dragPoints(builder.dragPointsFunction()),
+    m_newDragPoint(builder.newDragPointFunction()),
+    m_dragPointClick(builder.dragPointsClickedFunction()),
+    m_dragPointRelease(builder.dragPointsReleasedFunction()) {
 }
 
 LuaCustomEntity::LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID) :
     CustomEntity(insert, sameID),
-    _snapPoints(customEntity->_snapPoints),
-    _nearestPoint(customEntity->_nearestPoint),
-    _dragPoints(customEntity->_dragPoints),
-    _newDragPoint(customEntity->_newDragPoint),
-    _dragPointClick(customEntity->_dragPointClick),
-    _dragPointRelease(customEntity->_dragPointRelease) {
+    m_snapPoints(customEntity->m_snapPoints),
+    m_nearestPoint(customEntity->m_nearestPoint),
+    m_dragPoints(customEntity->m_dragPoints),
+    m_newDragPoint(customEntity->m_newDragPoint),
+    m_dragPointClick(customEntity->m_dragPointClick),
+    m_dragPointRelease(customEntity->m_dragPointRelease) {
 
 }
 
@@ -29,7 +29,7 @@ std::vector<EntityCoordinate> LuaCustomEntity::snapPoints(const geo::Coordinate&
         const SimpleSnapConstrain& simpleSnapConstrain,
         double minDistanceToSnap,
         int maxNumberOfSnapPoints) const {
-    auto snapPointsDupl = _snapPoints; //Dirty hack to call Lua function from a const function
+    auto snapPointsDupl = m_snapPoints; //Dirty hack to call Lua function from a const function
     auto points = snapPointsDupl.call<std::vector<EntityCoordinate>>(shared_from_this(), coord, simpleSnapConstrain, minDistanceToSnap, maxNumberOfSnapPoints);
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
 
@@ -37,7 +37,7 @@ std::vector<EntityCoordinate> LuaCustomEntity::snapPoints(const geo::Coordinate&
 }
 
 geo::Coordinate LuaCustomEntity::nearestPointOnPath(const geo::Coordinate& coord) const {
-    auto nearestPointDupl = _nearestPoint;
+    auto nearestPointDupl = m_nearestPoint;
     return nearestPointDupl.call<geo::Coordinate>(shared_from_this(), coord);
 }
 
@@ -76,21 +76,21 @@ CADEntity_CSPtr LuaCustomEntity::modify(meta::Layer_CSPtr layer, const meta::Met
 }
 
 std::map<unsigned int, geo::Coordinate> LuaCustomEntity::dragPoints() const {
-    auto dragPointsDupl = _dragPoints;
+    auto dragPointsDupl = m_dragPoints;
     return dragPointsDupl.call<std::map<unsigned int, geo::Coordinate>>(shared_from_this());
 }
 
 void LuaCustomEntity::onDragPointClick(lc::operation::Builder_SPtr builder, unsigned int point) const {
-    auto dragPointClickDupl = _dragPointClick;
+    auto dragPointClickDupl = m_dragPointClick;
     dragPointClickDupl(shared_from_this(), builder, point);
 }
 
 void LuaCustomEntity::onDragPointRelease(lc::operation::Builder_SPtr builder) const {
-    auto dragPointReleaseDupl = _dragPointRelease;
+    auto dragPointReleaseDupl = m_dragPointRelease;
     dragPointReleaseDupl(shared_from_this(), builder);
 }
 
 void LuaCustomEntity::setDragPoint(lc::geo::Coordinate position) const {
-    auto newDragPointDupl = _newDragPoint;
+    auto newDragPointDupl = m_newDragPoint;
     newDragPointDupl(shared_from_this(), position);
 }

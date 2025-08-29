@@ -1,13 +1,5 @@
 #pragma once
 
-/*
-extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
-*/
-
 #include <cad/storage/document.h>
 #include <kaguya/kaguya.hpp>
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../builders/customentity.h"
 #include <cad/primitive/customentity.h>
 #include <cad/interface/snapable.h>
-#include <kaguya/kaguya.hpp>
+
+class lc::builder::CustomEntityBuilder;
 
 namespace lc {
 namespace entity {
@@ -39,12 +39,12 @@ public:
     CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
 private:
-    kaguya::LuaRef _snapPoints;
-    kaguya::LuaRef _nearestPoint;
-    kaguya::LuaRef _dragPoints;
-    kaguya::LuaRef _newDragPoint;
-    kaguya::LuaRef _dragPointClick;
-    kaguya::LuaRef _dragPointRelease;
+    sol::function m_snapPoints;
+    sol::function m_nearestPoint;
+    sol::function m_dragPoints;
+    sol::function m_newDragPoint;
+    sol::function m_dragPointClick;
+    sol::function m_dragPointRelease;
 };
 
 DECLARE_SHORT_SHARED_PTR(LuaCustomEntity)
