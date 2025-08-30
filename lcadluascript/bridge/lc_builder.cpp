@@ -19,291 +19,323 @@
 #include <cad/primitive/mtext.h>
 #include "lc_builder.h"
 
-void import_lc_builder_namespace(kaguya::State& state) {
-    state["lc"]["builder"] = kaguya::NewTable();
+void import_lc_builder_namespace(sol::state & luaVM) 
+{
+    sol::table lc = luaVM["lc"];
+    lc["builder"] = luaVM.create_table();
+    sol::table builder = lc["builder"];
 
-    state["lc"]["builder"]["LinePatternBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LinePatternBuilder>()
-            .setConstructors<lc::builder::LinePatternBuilder()>()
-            .addFunction("addElement", &lc::builder::LinePatternBuilder::addElement)
-            .addFunction("build", &lc::builder::LinePatternBuilder::build)
-            .addFunction("checkValues", &lc::builder::LinePatternBuilder::checkValues)
-            .addFunction("description", &lc::builder::LinePatternBuilder::description)
-            .addFunction("name", &lc::builder::LinePatternBuilder::name)
-            .addFunction("path", &lc::builder::LinePatternBuilder::path)
-            .addFunction("setDescription", &lc::builder::LinePatternBuilder::setDescription)
-            .addFunction("setName", &lc::builder::LinePatternBuilder::setName)
-            .addFunction("setPath", &lc::builder::LinePatternBuilder::setPath)
-                                                         );
-
-
-
-    state["lc"]["builder"]["LayerBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LayerBuilder>()
-            .setConstructors<lc::builder::LayerBuilder()>()
-            .addFunction("build", &lc::builder::LayerBuilder::build)
-            .addFunction("color", &lc::builder::LayerBuilder::color)
-            .addFunction("isFrozen", &lc::builder::LayerBuilder::isFrozen)
-            .addFunction("linePattern", &lc::builder::LayerBuilder::linePattern)
-            .addFunction("lineWidth", &lc::builder::LayerBuilder::lineWidth)
-            .addFunction("name", &lc::builder::LayerBuilder::name)
-            .addFunction("setColor", &lc::builder::LayerBuilder::setColor)
-            .addFunction("setIsFrozen", &lc::builder::LayerBuilder::setIsFrozen)
-            .addFunction("setLinePattern", &lc::builder::LayerBuilder::setLinePattern)
-            .addFunction("setLineWidth", &lc::builder::LayerBuilder::setLineWidth)
-            .addFunction("setName", &lc::builder::LayerBuilder::setName)
-                                                   );
+    builder.new_usertype<lc::builder::LinePatternBuilder>(
+            "LinePatternBuilder",
+            sol::constructors<lc::builder::LinePatternBuilder()>(),
+            "addElement", &lc::builder::LinePatternBuilder::addElement,
+            "build", &lc::builder::LinePatternBuilder::build,
+            "checkValues", &lc::builder::LinePatternBuilder::checkValues,
+            "description", &lc::builder::LinePatternBuilder::description,
+            "name", &lc::builder::LinePatternBuilder::name,
+            "path", &lc::builder::LinePatternBuilder::path,
+            "setDescription", &lc::builder::LinePatternBuilder::setDescription,
+            "setName", &lc::builder::LinePatternBuilder::setName,
+            "setPath", &lc::builder::LinePatternBuilder::setPath
+            );
 
 
 
-    state["lc"]["builder"]["CADEntityBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::CADEntityBuilder()>()
-            .addFunction("block", &lc::builder::CADEntityBuilder::block)
-            .addFunction("checkValues", &lc::builder::CADEntityBuilder::checkValues)
-            .addFunction("id", &lc::builder::CADEntityBuilder::id)
-            .addFunction("layer", &lc::builder::CADEntityBuilder::layer)
-            .addFunction("metaInfo", &lc::builder::CADEntityBuilder::metaInfo)
-            .addFunction("newID", &lc::builder::CADEntityBuilder::newID)
-            .addOverloadedFunctions("setBlock", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Block_CSPtr &)>(&lc::builder::CADEntityBuilder::setBlock))
-            .addFunction("setID", &lc::builder::CADEntityBuilder::setID)
-            .addOverloadedFunctions("setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer))
-            .addOverloadedFunctions("setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo))
-                                                       );
-
-    state["lc"]["builder"]["ArcBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::ArcBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::ArcBuilder()>()
-            .addFunction("build", &lc::builder::ArcBuilder::build)
-            .addFunction("center", &lc::builder::ArcBuilder::center)
-            .addFunction("endAngle", &lc::builder::ArcBuilder::endAngle)
-            .addFunction("isCCW", &lc::builder::ArcBuilder::isCCW)
-            .addFunction("radius", &lc::builder::ArcBuilder::radius)
-            .addFunction("setCenter", &lc::builder::ArcBuilder::setCenter)
-            .addFunction("setEndAngle", &lc::builder::ArcBuilder::setEndAngle)
-            .addFunction("setIsCCW", &lc::builder::ArcBuilder::setIsCCW)
-            .addFunction("setRadius", &lc::builder::ArcBuilder::setRadius)
-            .addFunction("setStartAngle", &lc::builder::ArcBuilder::setStartAngle)
-            .addFunction("startAngle", &lc::builder::ArcBuilder::startAngle)
-                                                 );
+    builder.new_usertype<lc::builder::LayerBuilder>(
+            "LayerBuilder",
+            sol::constructors<lc::builder::LayerBuilder()>(),
+            "build", &lc::builder::LayerBuilder::build,
+            "color", &lc::builder::LayerBuilder::color,
+            "isFrozen", &lc::builder::LayerBuilder::isFrozen,
+            "linePattern", &lc::builder::LayerBuilder::linePattern,
+            "lineWidth", &lc::builder::LayerBuilder::lineWidth,
+            "name", &lc::builder::LayerBuilder::name,
+            "setColor", &lc::builder::LayerBuilder::setColor,
+            "setIsFrozen", &lc::builder::LayerBuilder::setIsFrozen,
+            "setLinePattern", &lc::builder::LayerBuilder::setLinePattern,
+            "setLineWidth", &lc::builder::LayerBuilder::setLineWidth,
+            "setName", &lc::builder::LayerBuilder::setName
+            );
 
 
 
-    state["lc"]["builder"]["CircleBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::CircleBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::CircleBuilder()>()
-            .addFunction("build", &lc::builder::CircleBuilder::build)
-            .addFunction("center", &lc::builder::CircleBuilder::center)
-            .addFunction("radius", &lc::builder::CircleBuilder::radius)
-            .addFunction("setCenter", &lc::builder::CircleBuilder::setCenter)
-            .addFunction("setRadius", &lc::builder::CircleBuilder::setRadius)
-            .addFunction("threeTanConstructor", &lc::builder::CircleBuilder::threeTanConstructor)
-            .addFunction("twoTanConstructor", &lc::builder::CircleBuilder::twoTanConstructor)
-            .addFunction("twoTanCircleCenters", &lc::builder::CircleBuilder::twoTanCircleCenters)
-            .addFunction("modifyForTempEntity", &lc::builder::CircleBuilder::modifyForTempEntity)
-                                                    );
+    builder.new_usertype<lc::builder::CADEntityBuilder>(
+            "CADEntityBuilder",
+            sol::constructors<lc::builder::CADEntityBuilder()>(),
+            "block", &lc::builder::CADEntityBuilder::block,
+            "checkValues", &lc::builder::CADEntityBuilder::checkValues,
+            "id", &lc::builder::CADEntityBuilder::id,
+            "layer", &lc::builder::CADEntityBuilder::layer,
+            "metaInfo", &lc::builder::CADEntityBuilder::metaInfo,
+            "newID", &lc::builder::CADEntityBuilder::newID,
+            "setID", &lc::builder::CADEntityBuilder::setID,
+            "setBlock", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Block_CSPtr &)>(&lc::builder::CADEntityBuilder::setBlock),
+            "setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer),
+            "setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo)
+            );
+
+    builder.new_usertype<lc::builder::ArcBuilder>(
+            "ArcBuilder", 
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::ArcBuilder()>(),
+            "build", &lc::builder::ArcBuilder::build,
+            "center", &lc::builder::ArcBuilder::center,
+            "endAngle", &lc::builder::ArcBuilder::endAngle,
+            "isCCW", &lc::builder::ArcBuilder::isCCW,
+            "radius", &lc::builder::ArcBuilder::radius,
+            "setCenter", &lc::builder::ArcBuilder::setCenter,
+            "setEndAngle", &lc::builder::ArcBuilder::setEndAngle,
+            "setIsCCW", &lc::builder::ArcBuilder::setIsCCW,
+            "setRadius", &lc::builder::ArcBuilder::setRadius,
+            "setStartAngle", &lc::builder::ArcBuilder::setStartAngle,
+            "startAngle", &lc::builder::ArcBuilder::startAngle
+            );
 
 
 
-    state["lc"]["builder"]["DimensionBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimensionBuilder, lc::builder::CADEntityBuilder>()
-            .addFunction("attachmentPoint", &lc::builder::DimensionBuilder::attachmentPoint)
-            .addFunction("definitionPoint", &lc::builder::DimensionBuilder::definitionPoint)
-            .addFunction("explicitValue", &lc::builder::DimensionBuilder::explicitValue)
-            .addFunction("lineSpacingFactor", &lc::builder::DimensionBuilder::lineSpacingFactor)
-            .addFunction("lineSpacingStyle", &lc::builder::DimensionBuilder::lineSpacingStyle)
-            .addFunction("middleOfText", &lc::builder::DimensionBuilder::middleOfText)
-            .addFunction("setAttachmentPoint", &lc::builder::DimensionBuilder::setAttachmentPoint)
-            .addFunction("setDefinitionPoint", &lc::builder::DimensionBuilder::setDefinitionPoint)
-            .addFunction("setExplicitValue", &lc::builder::DimensionBuilder::setExplicitValue)
-            .addFunction("setLineSpacingFactor", &lc::builder::DimensionBuilder::setLineSpacingFactor)
-            .addFunction("setLineSpacingStyle", &lc::builder::DimensionBuilder::setLineSpacingStyle)
-            .addFunction("setMiddleOfText", &lc::builder::DimensionBuilder::setMiddleOfText)
-            .addFunction("setTextAngle", &lc::builder::DimensionBuilder::setTextAngle)
-            .addFunction("textAngle", &lc::builder::DimensionBuilder::textAngle)
-                                                       );
+    builder.new_usertype<lc::builder::CircleBuilder>("CircleBuilder", 
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::CircleBuilder()>(),
+            "build", &lc::builder::CircleBuilder::build,
+            "center", &lc::builder::CircleBuilder::center,
+            "radius", &lc::builder::CircleBuilder::radius,
+            "setCenter", &lc::builder::CircleBuilder::setCenter,
+            "setRadius", &lc::builder::CircleBuilder::setRadius,
+            "threeTanConstructor", &lc::builder::CircleBuilder::threeTanConstructor,
+            "twoTanConstructor", &lc::builder::CircleBuilder::twoTanConstructor,
+            "twoTanCircleCenters", &lc::builder::CircleBuilder::twoTanCircleCenters,
+            "modifyForTempEntity", &lc::builder::CircleBuilder::modifyForTempEntity
+            );
 
 
 
-    state["lc"]["builder"]["PointBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::PointBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::PointBuilder()>()
-            .addFunction("build", &lc::builder::PointBuilder::build)
-            .addFunction("coordinate", &lc::builder::PointBuilder::coordinate)
-            .addFunction("setCoordinate", &lc::builder::PointBuilder::setCoordinate)
-                                                   );
+    builder.new_usertype<lc::builder::DimensionBuilder>(
+            "DimensionBuilder",
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            "attachmentPoint", &lc::builder::DimensionBuilder::attachmentPoint,
+            "definitionPoint", &lc::builder::DimensionBuilder::definitionPoint,
+            "explicitValue", &lc::builder::DimensionBuilder::explicitValue,
+            "lineSpacingFactor", &lc::builder::DimensionBuilder::lineSpacingFactor,
+            "lineSpacingStyle", &lc::builder::DimensionBuilder::lineSpacingStyle,
+            "middleOfText", &lc::builder::DimensionBuilder::middleOfText,
+            "setAttachmentPoint", &lc::builder::DimensionBuilder::setAttachmentPoint,
+            "setDefinitionPoint", &lc::builder::DimensionBuilder::setDefinitionPoint,
+            "setExplicitValue", &lc::builder::DimensionBuilder::setExplicitValue,
+            "setLineSpacingFactor", &lc::builder::DimensionBuilder::setLineSpacingFactor,
+            "setLineSpacingStyle", &lc::builder::DimensionBuilder::setLineSpacingStyle,
+            "setMiddleOfText", &lc::builder::DimensionBuilder::setMiddleOfText,
+            "setTextAngle", &lc::builder::DimensionBuilder::setTextAngle,
+            "textAngle", &lc::builder::DimensionBuilder::textAngle
+            );
+
+    builder.new_usertype<lc::builder::PointBuilder>(
+            "PointBuilder",
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::PointBuilder()>(),
+            "build", &lc::builder::PointBuilder::build,
+            "coordinate", &lc::builder::PointBuilder::coordinate,
+            "setCoordinate", &lc::builder::PointBuilder::setCoordinate
+            );
+
+    builder.new_usertype<lc::builder::DimAlignedBuilder>(
+            "DimAlignedBuilder",
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            sol::constructors<lc::builder::DimAlignedBuilder()>(),
+            "build", &lc::builder::DimAlignedBuilder::build,
+            "definitionPoint2", &lc::builder::DimAlignedBuilder::definitionPoint2,
+            "definitionPoint3", &lc::builder::DimAlignedBuilder::definitionPoint3,
+            "dimAuto", &lc::builder::DimAlignedBuilder::dimAuto,
+            "setDefinitionPoint2", &lc::builder::DimAlignedBuilder::setDefinitionPoint2,
+            "setDefinitionPoint3", &lc::builder::DimAlignedBuilder::setDefinitionPoint3
+            );
+
+    builder.new_usertype<lc::builder::DimAngularBuilder>(
+            "DimAngularBuilder",
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            sol::constructors<lc::builder::DimAngularBuilder()>(),
+            "build", &lc::builder::DimAngularBuilder::build,
+            "defLine11", &lc::builder::DimAngularBuilder::defLine11,
+            "defLine12", &lc::builder::DimAngularBuilder::defLine12,
+            "defLine21", &lc::builder::DimAngularBuilder::defLine21,
+            "defLine22", &lc::builder::DimAngularBuilder::defLine22,
+            "dimAuto", &lc::builder::DimAngularBuilder::dimAuto,
+            "setDefLine11", &lc::builder::DimAngularBuilder::setDefLine11,
+            "setDefLine12", &lc::builder::DimAngularBuilder::setDefLine12,
+            "setDefLine21", &lc::builder::DimAngularBuilder::setDefLine21,
+            "setDefLine22", &lc::builder::DimAngularBuilder::setDefLine22
+            );
+
+
+
+    builder.new_usertype<lc::builder::DimDiametricBuilder>(
+            "DimDiametricBuilder",
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            sol::constructors<lc::builder::DimDiametricBuilder()>(),
+            "build", &lc::builder::DimDiametricBuilder::build,
+            "definitionPoint2", &lc::builder::DimDiametricBuilder::definitionPoint2,
+            "leader", &lc::builder::DimDiametricBuilder::leader,
+            "setDefinitionPoint2", &lc::builder::DimDiametricBuilder::setDefinitionPoint2,
+            "setLeader", &lc::builder::DimDiametricBuilder::setLeader
+            );
+
+
+
+    builder.new_usertype<lc::builder::DimLinearBuilder>(
+            "DimLinearBuilder",,
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            sol::constructors<lc::builder::DimLinearBuilder()>(),
+            "angle", &lc::builder::DimLinearBuilder::angle,
+            "build", &lc::builder::DimLinearBuilder::build,
+            "definitionPoint2", &lc::builder::DimLinearBuilder::definitionPoint2,
+            "definitionPoint3", &lc::builder::DimLinearBuilder::definitionPoint3,
+            "oblique", &lc::builder::DimLinearBuilder::oblique,
+            "setAngle", &lc::builder::DimLinearBuilder::setAngle,
+            "setDefinitionPoint2", &lc::builder::DimLinearBuilder::setDefinitionPoint2,
+            "setDefinitionPoint3", &lc::builder::DimLinearBuilder::setDefinitionPoint3,
+            "setOblique", &lc::builder::DimLinearBuilder::setOblique
+            );
 
 
 
 
-    state["lc"]["builder"]["DimAlignedBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimAlignedBuilder, lc::builder::DimensionBuilder>()
-            .setConstructors<lc::builder::DimAlignedBuilder()>()
-            .addFunction("build", &lc::builder::DimAlignedBuilder::build)
-            .addFunction("definitionPoint2", &lc::builder::DimAlignedBuilder::definitionPoint2)
-            .addFunction("definitionPoint3", &lc::builder::DimAlignedBuilder::definitionPoint3)
-            .addFunction("dimAuto", &lc::builder::DimAlignedBuilder::dimAuto)
-            .addFunction("setDefinitionPoint2", &lc::builder::DimAlignedBuilder::setDefinitionPoint2)
-            .addFunction("setDefinitionPoint3", &lc::builder::DimAlignedBuilder::setDefinitionPoint3)
-                                                        );
-
-    state["lc"]["builder"]["DimAngularBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimAngularBuilder, lc::builder::DimensionBuilder>()
-            .setConstructors<lc::builder::DimAngularBuilder()>()
-            .addFunction("build", &lc::builder::DimAngularBuilder::build)
-            .addFunction("defLine11", &lc::builder::DimAngularBuilder::defLine11)
-            .addFunction("defLine12", &lc::builder::DimAngularBuilder::defLine12)
-            .addFunction("defLine21", &lc::builder::DimAngularBuilder::defLine21)
-            .addFunction("defLine22", &lc::builder::DimAngularBuilder::defLine22)
-            .addFunction("dimAuto", &lc::builder::DimAngularBuilder::dimAuto)
-            .addFunction("setDefLine11", &lc::builder::DimAngularBuilder::setDefLine11)
-            .addFunction("setDefLine12", &lc::builder::DimAngularBuilder::setDefLine12)
-            .addFunction("setDefLine21", &lc::builder::DimAngularBuilder::setDefLine21)
-            .addFunction("setDefLine22", &lc::builder::DimAngularBuilder::setDefLine22)
-                                                        );
-
-
-
-    state["lc"]["builder"]["DimDiametricBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimDiametricBuilder, lc::builder::DimensionBuilder>()
-            .setConstructors<lc::builder::DimDiametricBuilder()>()
-            .addFunction("build", &lc::builder::DimDiametricBuilder::build)
-            .addFunction("definitionPoint2", &lc::builder::DimDiametricBuilder::definitionPoint2)
-            .addFunction("leader", &lc::builder::DimDiametricBuilder::leader)
-            .addFunction("setDefinitionPoint2", &lc::builder::DimDiametricBuilder::setDefinitionPoint2)
-            .addFunction("setLeader", &lc::builder::DimDiametricBuilder::setLeader)
-                                                          );
-
-
-
-    state["lc"]["builder"]["DimLinearBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimLinearBuilder, lc::builder::DimensionBuilder>()
-            .setConstructors<lc::builder::DimLinearBuilder()>()
-            .addFunction("angle", &lc::builder::DimLinearBuilder::angle)
-            .addFunction("build", &lc::builder::DimLinearBuilder::build)
-            .addFunction("definitionPoint2", &lc::builder::DimLinearBuilder::definitionPoint2)
-            .addFunction("definitionPoint3", &lc::builder::DimLinearBuilder::definitionPoint3)
-            .addFunction("oblique", &lc::builder::DimLinearBuilder::oblique)
-            .addFunction("setAngle", &lc::builder::DimLinearBuilder::setAngle)
-            .addFunction("setDefinitionPoint2", &lc::builder::DimLinearBuilder::setDefinitionPoint2)
-            .addFunction("setDefinitionPoint3", &lc::builder::DimLinearBuilder::setDefinitionPoint3)
-            .addFunction("setOblique", &lc::builder::DimLinearBuilder::setOblique)
-                                                       );
-
-
-
-
-    state["lc"]["builder"]["DimRadialBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimRadialBuilder, lc::builder::DimensionBuilder>()
-            .setConstructors<lc::builder::DimRadialBuilder()>()
-            .addFunction("build", &lc::builder::DimRadialBuilder::build)
-            .addFunction("definitionPoint2", &lc::builder::DimRadialBuilder::definitionPoint2)
-            .addFunction("dimAuto", &lc::builder::DimRadialBuilder::dimAuto)
-            .addFunction("leader", &lc::builder::DimRadialBuilder::leader)
-            .addFunction("setDefinitionPoint2", &lc::builder::DimRadialBuilder::setDefinitionPoint2)
-            .addFunction("setLeader", &lc::builder::DimRadialBuilder::setLeader)
-                                                       );
+    builder.new_usertype<lc::builder::DimRadialBuilder>(
+            "DimRadialBuilder",
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            sol::constructors<lc::builder::DimRadialBuilder()>(),
+            "build", &lc::builder::DimRadialBuilder::build,
+            "definitionPoint2", &lc::builder::DimRadialBuilder::definitionPoint2,
+            "dimAuto", &lc::builder::DimRadialBuilder::dimAuto,
+            "leader", &lc::builder::DimRadialBuilder::leader,
+            "setDefinitionPoint2", &lc::builder::DimRadialBuilder::setDefinitionPoint2,
+            "setLeader", &lc::builder::DimRadialBuilder::setLeader
+            );
 
 
 
 
 
-    state["lc"]["builder"]["EllipseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::EllipseBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::EllipseBuilder()>()
-            .addFunction("build", &lc::builder::EllipseBuilder::build)
-            .addFunction("center", &lc::builder::EllipseBuilder::center)
-            .addFunction("endAngle", &lc::builder::EllipseBuilder::endAngle)
-            .addFunction("isReversed", &lc::builder::EllipseBuilder::isReversed)
-            .addFunction("majorPoint", &lc::builder::EllipseBuilder::majorPoint)
-            .addFunction("minorRadius", &lc::builder::EllipseBuilder::minorRadius)
-            .addFunction("setCenter", &lc::builder::EllipseBuilder::setCenter)
-            .addFunction("setEndAngle", &lc::builder::EllipseBuilder::setEndAngle)
-            .addFunction("setIsReversed", &lc::builder::EllipseBuilder::setIsReversed)
-            .addFunction("setMajorPoint", &lc::builder::EllipseBuilder::setMajorPoint)
-            .addFunction("setMinorRadius", &lc::builder::EllipseBuilder::setMinorRadius)
-            .addFunction("setStartAngle", &lc::builder::EllipseBuilder::setStartAngle)
-            .addFunction("startAngle", &lc::builder::EllipseBuilder::startAngle)
-                                                     );
+    builder.new_usertype<lc::builder::EllipseBuilder>(
+            "EllipseBuilder",
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::EllipseBuilder()>(),
+            "build", &lc::builder::EllipseBuilder::build,
+            "center", &lc::builder::EllipseBuilder::center,
+            "endAngle", &lc::builder::EllipseBuilder::endAngle,
+            "isReversed", &lc::builder::EllipseBuilder::isReversed,
+            "majorPoint", &lc::builder::EllipseBuilder::majorPoint,
+            "minorRadius", &lc::builder::EllipseBuilder::minorRadius,
+            "setCenter", &lc::builder::EllipseBuilder::setCenter,
+            "setEndAngle", &lc::builder::EllipseBuilder::setEndAngle,
+            "setIsReversed", &lc::builder::EllipseBuilder::setIsReversed,
+            "setMajorPoint", &lc::builder::EllipseBuilder::setMajorPoint,
+            "setMinorRadius", &lc::builder::EllipseBuilder::setMinorRadius,
+            "setStartAngle", &lc::builder::EllipseBuilder::setStartAngle,
+            "startAngle", &lc::builder::EllipseBuilder::startAngle
+            );
 
 
 
-    state["lc"]["builder"]["LineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LineBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::LineBuilder()>()
-            .addFunction("build", &lc::builder::LineBuilder::build)
-            .addFunction("endPoint", &lc::builder::LineBuilder::end)
-            .addFunction("setEndPoint", &lc::builder::LineBuilder::setEnd)
-            .addFunction("setStartPoint", &lc::builder::LineBuilder::setStart)
-            .addFunction("startPoint", &lc::builder::LineBuilder::start)
-            .addFunction("getLineAngle", &lc::builder::LineBuilder::getLineAngle)
-                                                  );
+    builder.new_usertype<lc::builder::LineBuilder>(
+            "LineBuilder", 
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::LineBuilder()>(),
+            "build", &lc::builder::LineBuilder::build,
+            "endPoint", &lc::builder::LineBuilder::end,
+            "setEndPoint", &lc::builder::LineBuilder::setEnd,
+            "setStartPoint", &lc::builder::LineBuilder::setStart,
+            "startPoint", &lc::builder::LineBuilder::start,
+            "getLineAngle", &lc::builder::LineBuilder::getLineAngle
+            );
 
 
 
-    state["lc"]["builder"]["SplineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::SplineBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::SplineBuilder()>()
-            .addFunction("addControlPoint", &lc::builder::SplineBuilder::addControlPoint)
-            .addFunction("addFitPoint", &lc::builder::SplineBuilder::addFitPoint)
-            .addFunction("addKnotPoint", &lc::builder::SplineBuilder::addKnotPoint)
-            .addFunction("build", &lc::builder::SplineBuilder::build)
-            .addFunction("closed", &lc::builder::SplineBuilder::closed)
-            .addFunction("controlPoints", &lc::builder::SplineBuilder::controlPoints)
-            .addFunction("degree", &lc::builder::SplineBuilder::degree)
-            .addFunction("endTangent", &lc::builder::SplineBuilder::endTangent)
-            .addFunction("fitPoints", &lc::builder::SplineBuilder::fitPoints)
-            .addFunction("fitTolerance", &lc::builder::SplineBuilder::fitTolerance)
-            .addFunction("flags", &lc::builder::SplineBuilder::flags)
-            .addFunction("knotPoints", &lc::builder::SplineBuilder::knotPoints)
-            .addFunction("normalVector", &lc::builder::SplineBuilder::normalVector)
-            .addFunction("removeControlPoint", &lc::builder::SplineBuilder::removeControlPoint)
-            .addFunction("removeFitPoint", &lc::builder::SplineBuilder::removeFitPoint)
-            .addFunction("removeKnotPoint", &lc::builder::SplineBuilder::removeKnotPoint)
-            .addFunction("setClosed", &lc::builder::SplineBuilder::setClosed)
-            .addFunction("setControlPoints", &lc::builder::SplineBuilder::setControlPoints)
-            .addFunction("setDegree", &lc::builder::SplineBuilder::setDegree)
-            .addFunction("setEndTangent", &lc::builder::SplineBuilder::setEndTangent)
-            .addFunction("setFitPoints", &lc::builder::SplineBuilder::setFitPoints)
-            .addFunction("setFitTolerance", &lc::builder::SplineBuilder::setFitTolerance)
-            .addFunction("setFlags", &lc::builder::SplineBuilder::setFlags)
-            .addFunction("setKnotPoints", &lc::builder::SplineBuilder::setKnotPoints)
-            .addFunction("setNormalVector", &lc::builder::SplineBuilder::setNormalVector)
-            .addFunction("setStartTangent", &lc::builder::SplineBuilder::setStartTangent)
-            .addFunction("startTangent", &lc::builder::SplineBuilder::startTangent)
-                                                    );
+    builder.new_usertype<lc::builder::SplineBuilder>(
+            "SplineBuilder", 
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::SplineBuilder()>(),
+            "addControlPoint", &lc::builder::SplineBuilder::addControlPoint,
+            "addFitPoint", &lc::builder::SplineBuilder::addFitPoint,
+            "addKnotPoint", &lc::builder::SplineBuilder::addKnotPoint,
+            "build", &lc::builder::SplineBuilder::build,
+            "closed", &lc::builder::SplineBuilder::closed,
+            "controlPoints", &lc::builder::SplineBuilder::controlPoints,
+            "degree", &lc::builder::SplineBuilder::degree,
+            "endTangent", &lc::builder::SplineBuilder::endTangent,
+            "fitPoints", &lc::builder::SplineBuilder::fitPoints,
+            "fitTolerance", &lc::builder::SplineBuilder::fitTolerance,
+            "flags", &lc::builder::SplineBuilder::flags,
+            "knotPoints", &lc::builder::SplineBuilder::knotPoints,
+            "normalVector", &lc::builder::SplineBuilder::normalVector,
+            "removeControlPoint", &lc::builder::SplineBuilder::removeControlPoint,
+            "removeFitPoint", &lc::builder::SplineBuilder::removeFitPoint,
+            "removeKnotPoint", &lc::builder::SplineBuilder::removeKnotPoint,
+            "setClosed", &lc::builder::SplineBuilder::setClosed,
+            "setControlPoints", &lc::builder::SplineBuilder::setControlPoints,
+            "setDegree", &lc::builder::SplineBuilder::setDegree,
+            "setEndTangent", &lc::builder::SplineBuilder::setEndTangent,
+            "setFitPoints", &lc::builder::SplineBuilder::setFitPoints,
+            "setFitTolerance", &lc::builder::SplineBuilder::setFitTolerance,
+            "setFlags", &lc::builder::SplineBuilder::setFlags,
+            "setKnotPoints", &lc::builder::SplineBuilder::setKnotPoints,
+            "setNormalVector", &lc::builder::SplineBuilder::setNormalVector,
+            "setStartTangent", &lc::builder::SplineBuilder::setStartTangent,
+            "startTangent", &lc::builder::SplineBuilder::startTangent
+                );
 
-    state["lc"]["builder"]["LWPolylineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LWPolylineBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::LWPolylineBuilder()>()
-            .addFunction("addLineVertex", &lc::builder::LWPolylineBuilder::addLineVertex)
-            .addFunction("addArcVertex", &lc::builder::LWPolylineBuilder::addArcVertex)
-            .addFunction("modifyLastVertex", &lc::builder::LWPolylineBuilder::modifyLastVertex)
-            .addFunction("modifyLastVertexArc", &lc::builder::LWPolylineBuilder::modifyLastVertexArc)
-            .addFunction("modifyLastVertexLine", &lc::builder::LWPolylineBuilder::modifyLastVertexLine)
-            .addFunction("removeVertex", &lc::builder::LWPolylineBuilder::removeVertex)
-            .addFunction("getVertices", &lc::builder::LWPolylineBuilder::getVertices)
-            .addFunction("setWidth", &lc::builder::LWPolylineBuilder::setWidth)
-            .addFunction("build", &lc::builder::LWPolylineBuilder::build)
-                                                        );
+    builder.new_usertype<lc::builder::LWPolylineBuilder>(
+            "LWPolylineBuilder",
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::LWPolylineBuilder()>(),
+            "addLineVertex", &lc::builder::LWPolylineBuilder::addLineVertex,
+            "addArcVertex", &lc::builder::LWPolylineBuilder::addArcVertex,
+            "modifyLastVertex", &lc::builder::LWPolylineBuilder::modifyLastVertex,
+            "modifyLastVertexArc", &lc::builder::LWPolylineBuilder::modifyLastVertexArc,
+            "modifyLastVertexLine", &lc::builder::LWPolylineBuilder::modifyLastVertexLine,
+            "removeVertex", &lc::builder::LWPolylineBuilder::removeVertex,
+            "getVertices", &lc::builder::LWPolylineBuilder::getVertices,
+            "setWidth", &lc::builder::LWPolylineBuilder::setWidth,
+            "build", &lc::builder::LWPolylineBuilder::build
+            );
 
-    state["lc"]["builder"]["InsertBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::InsertBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::InsertBuilder()>()
-            .addFunction("build", &lc::builder::InsertBuilder::build)
-            .addFunction("checkValues", &lc::builder::InsertBuilder::checkValues)
-            .addFunction("coordinate", &lc::builder::InsertBuilder::coordinate)
-            .addFunction("displayBlock", &lc::builder::InsertBuilder::displayBlock)
-            .addFunction("document", &lc::builder::InsertBuilder::document)
-            .addFunction("setCoordinate", &lc::builder::InsertBuilder::setCoordinate)
-            .addFunction("setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock)
-            .addFunction("setDocument", &lc::builder::InsertBuilder::setDocument)
-                                                    );
+    builder.new_usertype<lc::builder::InsertBuilder>(
+            "InsertBuilder", 
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::InsertBuilder()>(),
+            "build", &lc::builder::InsertBuilder::build,
+            "checkValues", &lc::builder::InsertBuilder::checkValues,
+            "coordinate", &lc::builder::InsertBuilder::coordinate,
+            "displayBlock", &lc::builder::InsertBuilder::displayBlock,
+            "document", &lc::builder::InsertBuilder::document,
+            "setCoordinate", &lc::builder::InsertBuilder::setCoordinate,
+            "setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock,
+            "setDocument", &lc::builder::InsertBuilder::setDocument
+            );
 
-    state["lc"]["builder"]["TextBaseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBaseBuilder, lc::builder::CADEntityBuilder>()
-            .setConstructors<lc::builder::TextBaseBuilder()>()
-            .addFunction("insertionPoint", &lc::builder::TextBaseBuilder::insertionPoint)
-            .addFunction("setInsertionPoint", &lc::builder::TextBaseBuilder::setInsertionPoint)
-            .addFunction("textValue", &lc::builder::TextBaseBuilder::textValue)
-            .addFunction("setTextValue", &lc::builder::TextBaseBuilder::setTextValue)
-            .addFunction("height", &lc::builder::TextBaseBuilder::height)
-            .addFunction("setHeight", &lc::builder::TextBaseBuilder::setHeight)
-            .addFunction("angle", &lc::builder::TextBaseBuilder::angle)
-            .addFunction("setAngle", &lc::builder::TextBaseBuilder::setAngle)
-                                                  );
+    builder.new_usertype<lc::builder::TextBaseBuilder>(
+            "TextBaseBuilder",
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
+            sol::constructors<lc::builder::TextBaseBuilder()>(),
+            "insertionPoint", &lc::builder::TextBaseBuilder::insertionPoint,
+            "setInsertionPoint", &lc::builder::TextBaseBuilder::setInsertionPoint,
+            "textValue", &lc::builder::TextBaseBuilder::textValue,
+            "setTextValue", &lc::builder::TextBaseBuilder::setTextValue,
+            "height", &lc::builder::TextBaseBuilder::height,
+            "setHeight", &lc::builder::TextBaseBuilder::setHeight,
+            "angle", &lc::builder::TextBaseBuilder::angle,
+            "setAngle", &lc::builder::TextBaseBuilder::setAngle
+            );
 
-    state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::TextBaseBuilder>()
-            .setConstructors<lc::builder::TextBuilder()>()
-            .addFunction("build", &lc::builder::TextBuilder::build)
-            .addFunction("copy", &lc::builder::TextBuilder::copy)
-                                                  );
+    builder.new_usertype<lc::builder::TextBuilder>("TextBuilder", 
+            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
+            sol::constructors<lc::builder::TextBuilder()>(),
+            "build", &lc::builder::TextBuilder::build,
+            "copy", &lc::builder::TextBuilder::copy
+            );
 
-    state["lc"]["builder"]["MTextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::MTextBuilder, lc::builder::TextBaseBuilder>()
-        .setConstructors<lc::builder::MTextBuilder()>()
-        .addFunction("build", &lc::builder::MTextBuilder::build)
-        .addFunction("copy", &lc::builder::MTextBuilder::copy)
-    );
+    builder.new_usertype<lc::builder::MTextBuilder>("MTextBuilder", 
+            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
+            sol::constructors<lc::builder::MTextBuilder()>(),
+            "build", &lc::builder::MTextBuilder::build,
+            "copy", &lc::builder::MTextBuilder::copy
+            );
 }

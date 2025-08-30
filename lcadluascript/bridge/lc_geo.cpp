@@ -12,7 +12,7 @@
 #include <cad/geometry/georegion.h>
 #include "lc_geo.h"
 
-void import_lc_geo_namespace(kaguya::State& state) {
+void import_lc_geo_namespace(sol::state & luaVM) {
     state["lc"]["geo"] = kaguya::NewTable();
 
     state["lc"]["geo"]["Coordinate"].setClass(kaguya::UserdataMetatable<lc::geo::Coordinate>()

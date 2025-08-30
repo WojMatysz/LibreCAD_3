@@ -6,7 +6,7 @@
 #include <cad/meta/customentitystorage.h>
 #include "lc_meta.h"
 
-void import_lc_meta_namespace(kaguya::State& state) {
+void import_lc_meta_namespace(sol::state & luaVM) {
     state["lc"]["meta"] = kaguya::NewTable();
 
     state["lc"]["meta"]["MetaType"].setClass(kaguya::UserdataMetatable<lc::meta::MetaType>()

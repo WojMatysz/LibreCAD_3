@@ -2,7 +2,7 @@
 #include <cad/math/intersect.h>
 #include "lc_maths.h"
 
-void import_lc_maths_namespace(kaguya::State& state) {
+void import_lc_maths_namespace(sol::state & luaVM) {
     state["lc"]["maths"] = kaguya::NewTable();
 
     state["lc"]["maths"]["Equation"].setClass(kaguya::UserdataMetatable<lc::maths::Equation>()

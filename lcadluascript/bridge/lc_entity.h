@@ -1,5 +1,5 @@
 #pragma once
 
-#include <kaguya/include/kaguya/state.hpp>
+#include "sol.hpp"
 
-void import_lc_entity_namespace(kaguya::State& state);
+void import_lc_entity_namespace(sol::state & luaVM);

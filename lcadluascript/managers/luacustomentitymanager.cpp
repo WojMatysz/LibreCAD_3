@@ -35,7 +35,7 @@ void LuaCustomEntityManager::onNewWaitingEntity(const lc::event::NewWaitingCusto
 void LuaCustomEntityManager::registerPlugin(const std::string& name, sol::function onNewWaitingEntityFunction) 
 {
 
-    if(!onNewWaitingEntityFunction.isValid()) 
+    if(!onNewWaitingEntityFunction.valid()) 
     {
         std::cerr << "sol::function sent to registration process is not valid, name: " << name << "\n";
         return;

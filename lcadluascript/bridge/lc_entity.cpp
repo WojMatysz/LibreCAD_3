@@ -1,3 +1,5 @@
+#include "lc_entity.h"
+
 #include <cad/interface/draggable.h>
 #include <cad/interface/snapable.h>
 #include <cad/interface/splitable.h>
@@ -22,7 +24,6 @@
 #include <cad/primitive/insert.h>
 #include <cad/interface/unmanageddraggable.h>
 #include <cad/primitive/customentity.h>
-#include "lc_entity.h"
 
 //Do split if possible
 std::vector<lc::entity::CADEntity_CSPtr> splitHelper(lc::entity::CADEntity_CSPtr e, lc::geo::Coordinate& p) {
@@ -34,365 +35,414 @@ std::vector<lc::entity::CADEntity_CSPtr> splitHelper(lc::entity::CADEntity_CSPtr
     return out;
 }
 
-void import_lc_entity_namespace(kaguya::State& state) {
-    state["lc"]["entity"] = kaguya::NewTable();
+void import_lc_entity_namespace(sol::state & luaVM) 
+{
+    sol::table lc = luaVM["lc"];
+    lc["entity"] = luaVM.create_table();
+    sol::table entity = lc["entity"];
 
-    state["lc"]["entity"]["ID"].setClass(kaguya::UserdataMetatable<lc::entity::ID>()
-                                         .setConstructors<lc::entity::ID(), lc::entity::ID(unsigned long)>()
-                                         .addFunction("id", &lc::entity::ID::id)
-                                         .addFunction("setID", &lc::entity::ID::setID)
-                                        );
+    entity.new_usertype<lc::entity::ID>(
+            "ID",
+            sol::constructors<lc::entity::ID(), lc::entity::ID(unsigned long)>(),
+            "id", &lc::entity::ID::id,
+            "setID", &lc::entity::ID::setID
+            );
 
-    state["lc"]["entity"]["CADEntity"].setClass(kaguya::UserdataMetatable<lc::entity::CADEntity, kaguya::MultipleBase<lc::entity::ID, lc::Visitable>>()
-            .addFunction("accept", &lc::entity::CADEntity::accept)
-            .addFunction("block", &lc::entity::CADEntity::block)
-            .addFunction("boundingBox", &lc::entity::CADEntity::boundingBox)
-            .addFunction("copy", &lc::entity::CADEntity::copy)
-            .addFunction("dispatch", &lc::entity::CADEntity::dispatch)
-            .addFunction("layer", &lc::entity::CADEntity::layer)
-            .addFunction("metaInfo", &lc::entity::CADEntity::metaInfo<lc::meta::EntityMetaType>)
-            .addFunction("mirror", &lc::entity::CADEntity::mirror)
-            .addFunction("modify", &lc::entity::CADEntity::modify)
-            .addFunction("move", &lc::entity::CADEntity::move)
-            .addFunction("rotate", &lc::entity::CADEntity::rotate)
-            .addFunction("scale", &lc::entity::CADEntity::scale)
-                                               );
+    entity.new_usertype<lc::entity::CADEntity>(
+            "CADEntity",
+            sol::base_classes, sol::bases<lc::entity::ID, lc::Visitable>(),
+            "accept", &lc::entity::CADEntity::accept,
+            "block", &lc::entity::CADEntity::block,
+            "boundingBox", &lc::entity::CADEntity::boundingBox,
+            "copy", &lc::entity::CADEntity::copy,
+            "dispatch", &lc::entity::CADEntity::dispatch,
+            "layer", &lc::entity::CADEntity::layer,
+            "metaInfo", &lc::entity::CADEntity::metaInfo<lc::meta::EntityMetaType>,
+            "mirror", &lc::entity::CADEntity::mirror,
+            "modify", &lc::entity::CADEntity::modify,
+            "move", &lc::entity::CADEntity::move,
+            "rotate", &lc::entity::CADEntity::rotate,
+            "scale", &lc::entity::CADEntity::scale
+            );
 
-    state["lc"]["entity"]["Snapable"].setClass(kaguya::UserdataMetatable<lc::entity::Snapable>()
-            .addFunction("nearestPointOnPath", &lc::entity::Snapable::nearestPointOnPath)
-            .addStaticFunction("remove_ifDistanceGreaterThen", &lc::entity::Snapable::remove_ifDistanceGreaterThen)
-            .addFunction("snapPoints", &lc::entity::Snapable::snapPoints)
-            .addStaticFunction("snapPointsCleanup", &lc::entity::Snapable::snapPointsCleanup)
-                                              );
+    entity.new_usertype<lc::entity::Snapable>(
+            "Snapable",
+            "nearestPointOnPath", &lc::entity::Snapable::nearestPointOnPath,
+            "remove_ifDistanceGreaterThen", &lc::entity::Snapable::remove_ifDistanceGreaterThen,
+            "snapPoints", &lc::entity::Snapable::snapPoints,
+            "snapPointsCleanup", &lc::entity::Snapable::snapPointsCleanup,
+            );
 
-    state["lc"]["entity"]["Draggable"].setClass(kaguya::UserdataMetatable<lc::entity::Draggable>()
-            .addFunction("dragPoints", &lc::entity::Draggable::dragPoints)
-            .addFunction("setDragPoints", &lc::entity::Draggable::setDragPoints)
-                                               );
+    entity.new_usertype<lc::entity::Draggable>(
+            "Draggable",
+            "dragPoints", &lc::entity::Draggable::dragPoints,
+            "setDragPoints", &lc::entity::Draggable::setDragPoints
+            );
 
-    state["lc"]["entity"]["Splitable"].setClass(kaguya::UserdataMetatable<lc::entity::Splitable>()
-            .addFunction("splitEntity", &lc::entity::Splitable::splitEntity)
-            .addStaticFunction("splitHelper", &splitHelper)//Does splitEntity if possible
-                                               );
+    entity.new_usertype<lc::entity::Splitable>(
+            "Splitable",
+            "splitEntity", &lc::entity::Splitable::splitEntity,
+            "splitHelper", &splitHelper
+            //Does splitEntity if possible
+            );
 
-    state["lc"]["entity"]["Arc"].setClass(kaguya::UserdataMetatable<lc::entity::Arc, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>>()
-                                          .addFunction("accept", &lc::entity::Arc::accept)
-                                          .addFunction("boundingBox", &lc::entity::Arc::boundingBox)
-                                          .addFunction("copy", &lc::entity::Arc::copy)
-                                          .addFunction("dispatch", &lc::entity::Arc::dispatch)
-                                          .addFunction("dragPoints", &lc::entity::Arc::dragPoints)
-                                          .addFunction("mirror", &lc::entity::Arc::mirror)
-                                          .addFunction("modify", &lc::entity::Arc::modify)
-                                          .addFunction("move", &lc::entity::Arc::move)
-                                          .addFunction("nearestPointOnPath", &lc::entity::Arc::nearestPointOnPath)
-                                          .addFunction("rotate", &lc::entity::Arc::rotate)
-                                          .addFunction("scale", &lc::entity::Arc::scale)
-                                          .addFunction("setDragPoints", &lc::entity::Arc::setDragPoints)
-                                          .addFunction("snapPoints", &lc::entity::Arc::snapPoints)
-                                         );
+    entity.new_usertype<lc::entity::Arc>(
+            "Arc", 
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>(),
+            "accept", &lc::entity::Arc::accept,
+            "boundingBox", &lc::entity::Arc::boundingBox,
+            "copy", &lc::entity::Arc::copy,
+            "dispatch", &lc::entity::Arc::dispatch,
+            "dragPoints", &lc::entity::Arc::dragPoints,
+            "mirror", &lc::entity::Arc::mirror,
+            "modify", &lc::entity::Arc::modify,
+            "move", &lc::entity::Arc::move,
+            "nearestPointOnPath", &lc::entity::Arc::nearestPointOnPath,
+            "rotate", &lc::entity::Arc::rotate,
+            "scale", &lc::entity::Arc::scale,
+            "setDragPoints", &lc::entity::Arc::setDragPoints,
+            "snapPoints", &lc::entity::Arc::snapPoints
+            );
 
     //TODO: should be moved to geo
-    state["lc"]["entity"]["Tangentable"].setClass(kaguya::UserdataMetatable<lc::entity::Tangentable>()
-            .addFunction("lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity)
-                                                 );
+    entity.new_usertype<lc::entity::Tangentable>(
+            "Tangentable",
+            "lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity,
+            );
 
-    state["lc"]["entity"]["Circle"].setClass(kaguya::UserdataMetatable<lc::entity::Circle, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable, lc::entity::Splitable>>()
-            .addFunction("accept", &lc::entity::Circle::accept)
-            .addFunction("boundingBox", &lc::entity::Circle::boundingBox)
-            .addFunction("copy", &lc::entity::Circle::copy)
-            .addFunction("dispatch", &lc::entity::Circle::dispatch)
-            .addFunction("mirror", &lc::entity::Circle::mirror)
-            .addFunction("modify", &lc::entity::Circle::modify)
-            .addFunction("move", &lc::entity::Circle::move)
-            .addFunction("nearestPointOnPath", &lc::entity::Circle::nearestPointOnPath)
-            .addFunction("rotate", &lc::entity::Circle::rotate)
-            .addFunction("scale", &lc::entity::Circle::scale)
-            .addFunction("snapPoints", &lc::entity::Circle::snapPoints)
-                                            );
+    entity.new_usertype<lc::entity::Circle>(
+            "Circle",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable, lc::entity::Splitable>(),
+            "accept", &lc::entity::Circle::accept,
+            "boundingBox", &lc::entity::Circle::boundingBox,
+            "copy", &lc::entity::Circle::copy,
+            "dispatch", &lc::entity::Circle::dispatch,
+            "mirror", &lc::entity::Circle::mirror,
+            "modify", &lc::entity::Circle::modify,
+            "move", &lc::entity::Circle::move,
+            "nearestPointOnPath", &lc::entity::Circle::nearestPointOnPath,
+            "rotate", &lc::entity::Circle::rotate,
+            "scale", &lc::entity::Circle::scale,
+            "snapPoints", &lc::entity::Circle::snapPoints
+            );
 
-    state["lc"]["entity"]["Dimension"].setClass(kaguya::UserdataMetatable<lc::entity::Dimension>()
-            .addFunction("attachmentPoint", &lc::entity::Dimension::attachmentPoint)
-            .addFunction("definitionPoint", &lc::entity::Dimension::definitionPoint)
-            .addFunction("explicitValue", &lc::entity::Dimension::explicitValue)
-            .addFunction("lineSpacingFactor", &lc::entity::Dimension::lineSpacingFactor)
-            .addFunction("lineSpacingStyle", &lc::entity::Dimension::lineSpacingStyle)
-            .addFunction("middleOfText", &lc::entity::Dimension::middleOfText)
-            .addFunction("textAngle", &lc::entity::Dimension::textAngle)
-                                               );
+    entity.new_usertype<lc::entity::Dimension>(
+            "Dimension",
+            "attachmentPoint", &lc::entity::Dimension::attachmentPoint,
+            "definitionPoint", &lc::entity::Dimension::definitionPoint,
+            "explicitValue", &lc::entity::Dimension::explicitValue,
+            "lineSpacingFactor", &lc::entity::Dimension::lineSpacingFactor,
+            "lineSpacingStyle", &lc::entity::Dimension::lineSpacingStyle,
+            "middleOfText", &lc::entity::Dimension::middleOfText,
+            "textAngle", &lc::entity::Dimension::textAngle
+            );
 
-    state["lc"]["entity"]["Point"].setClass(kaguya::UserdataMetatable<lc::entity::Point, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Coordinate, lc::Visitable>>()
-                                            .addFunction("accept", &lc::entity::Point::accept)
-                                            .addFunction("boundingBox", &lc::entity::Point::boundingBox)
-                                            .addFunction("copy", &lc::entity::Point::copy)
-                                            .addFunction("dispatch", &lc::entity::Point::dispatch)
-                                            .addFunction("mirror", &lc::entity::Point::mirror)
-                                            .addFunction("modify", &lc::entity::Point::modify)
-                                            .addFunction("move", &lc::entity::Point::move)
-                                            .addFunction("rotate", &lc::entity::Point::rotate)
-                                            .addFunction("scale", &lc::entity::Point::scale)
-                                           );
+    entity.new_usertype<lc::entity::Point>(
+            "Point",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Coordinate, lc::Visitable>(),
+            "accept", &lc::entity::Point::accept,
+            "boundingBox", &lc::entity::Point::boundingBox,
+            "copy", &lc::entity::Point::copy,
+            "dispatch", &lc::entity::Point::dispatch,
+            "mirror", &lc::entity::Point::mirror,
+            "modify", &lc::entity::Point::modify,
+            "move", &lc::entity::Point::move,
+            "rotate", &lc::entity::Point::rotate,
+            "scale", &lc::entity::Point::scale
+            );
 
-    state["lc"]["entity"]["DimAligned"].setClass(kaguya::UserdataMetatable<lc::entity::DimAligned, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::DimAligned::accept)
-            .addFunction("boundingBox", &lc::entity::DimAligned::boundingBox)
-            .addFunction("copy", &lc::entity::DimAligned::copy)
-            .addFunction("definitionPoint2", &lc::entity::DimAligned::definitionPoint2)
-            .addFunction("definitionPoint3", &lc::entity::DimAligned::definitionPoint3)
-            .addFunction("dispatch", &lc::entity::DimAligned::dispatch)
-            .addFunction("dragPoints", &lc::entity::DimAligned::dragPoints)
-            .addFunction("mirror", &lc::entity::DimAligned::mirror)
-            .addFunction("modify", &lc::entity::DimAligned::modify)
-            .addFunction("move", &lc::entity::DimAligned::move)
-            .addFunction("rotate", &lc::entity::DimAligned::rotate)
-            .addFunction("scale", &lc::entity::DimAligned::scale)
-            .addFunction("setDragPoints", &lc::entity::DimAligned::setDragPoints)
-                                                );
+    entity.new_usertype<lc::entity::DimAligned>(
+            "DimAligned",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::DimAligned::accept,
+            "boundingBox", &lc::entity::DimAligned::boundingBox,
+            "copy", &lc::entity::DimAligned::copy,
+            "definitionPoint2", &lc::entity::DimAligned::definitionPoint2,
+            "definitionPoint3", &lc::entity::DimAligned::definitionPoint3,
+            "dispatch", &lc::entity::DimAligned::dispatch,
+            "dragPoints", &lc::entity::DimAligned::dragPoints,
+            "mirror", &lc::entity::DimAligned::mirror,
+            "modify", &lc::entity::DimAligned::modify,
+            "move", &lc::entity::DimAligned::move,
+            "rotate", &lc::entity::DimAligned::rotate,
+            "scale", &lc::entity::DimAligned::scale,
+            "setDragPoints", &lc::entity::DimAligned::setDragPoints
+            );
 
-    state["lc"]["entity"]["DimAngular"].setClass(kaguya::UserdataMetatable<lc::entity::DimAngular, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::DimAngular::accept)
-            .addFunction("boundingBox", &lc::entity::DimAngular::boundingBox)
-            .addFunction("copy", &lc::entity::DimAngular::copy)
-            .addFunction("defLine11", &lc::entity::DimAngular::defLine11)
-            .addFunction("defLine12", &lc::entity::DimAngular::defLine12)
-            .addFunction("defLine21", &lc::entity::DimAngular::defLine21)
-            .addFunction("defLine22", &lc::entity::DimAngular::defLine22)
-            .addFunction("dispatch", &lc::entity::DimAngular::dispatch)
-            .addFunction("dragPoints", &lc::entity::DimAngular::dragPoints)
-            .addFunction("mirror", &lc::entity::DimAngular::mirror)
-            .addFunction("modify", &lc::entity::DimAngular::modify)
-            .addFunction("move", &lc::entity::DimAngular::move)
-            .addFunction("rotate", &lc::entity::DimAngular::rotate)
-            .addFunction("scale", &lc::entity::DimAngular::scale)
-            .addFunction("setDragPoints", &lc::entity::DimAngular::setDragPoints)
-                                                );
+    entity.new_usertype<lc::entity::DimAngular>(
+            "DimAngular",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::DimAngular::accept,
+            "boundingBox", &lc::entity::DimAngular::boundingBox,
+            "copy", &lc::entity::DimAngular::copy,
+            "defLine11", &lc::entity::DimAngular::defLine11,
+            "defLine12", &lc::entity::DimAngular::defLine12,
+            "defLine21", &lc::entity::DimAngular::defLine21,
+            "defLine22", &lc::entity::DimAngular::defLine22,
+            "dispatch", &lc::entity::DimAngular::dispatch,
+            "dragPoints", &lc::entity::DimAngular::dragPoints,
+            "mirror", &lc::entity::DimAngular::mirror,
+            "modify", &lc::entity::DimAngular::modify,
+            "move", &lc::entity::DimAngular::move,
+            "rotate", &lc::entity::DimAngular::rotate,
+            "scale", &lc::entity::DimAngular::scale,
+            "setDragPoints", &lc::entity::DimAngular::setDragPoints
+            );
 
-    state["lc"]["entity"]["DimDiametric"].setClass(kaguya::UserdataMetatable<lc::entity::DimDiametric, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::DimDiametric::accept)
-            .addFunction("boundingBox", &lc::entity::DimDiametric::boundingBox)
-            .addFunction("copy", &lc::entity::DimDiametric::copy)
-            .addFunction("definitionPoint2", &lc::entity::DimDiametric::definitionPoint2)
-            .addFunction("dispatch", &lc::entity::DimDiametric::dispatch)
-            .addFunction("dragPoints", &lc::entity::DimDiametric::dragPoints)
-            .addFunction("leader", &lc::entity::DimDiametric::leader)
-            .addFunction("mirror", &lc::entity::DimDiametric::mirror)
-            .addFunction("modify", &lc::entity::DimDiametric::modify)
-            .addFunction("move", &lc::entity::DimDiametric::move)
-            .addFunction("rotate", &lc::entity::DimDiametric::rotate)
-            .addFunction("scale", &lc::entity::DimDiametric::scale)
-            .addFunction("setDragPoints", &lc::entity::DimDiametric::setDragPoints)
-                                                  );
+    entity.new_usertype<lc::entity::DimDiametric>(
+            "DimDiametric",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::DimDiametric::accept,
+            "boundingBox", &lc::entity::DimDiametric::boundingBox,
+            "copy", &lc::entity::DimDiametric::copy,
+            "definitionPoint2", &lc::entity::DimDiametric::definitionPoint2,
+            "dispatch", &lc::entity::DimDiametric::dispatch,
+            "dragPoints", &lc::entity::DimDiametric::dragPoints,
+            "leader", &lc::entity::DimDiametric::leader,
+            "mirror", &lc::entity::DimDiametric::mirror,
+            "modify", &lc::entity::DimDiametric::modify,
+            "move", &lc::entity::DimDiametric::move,
+            "rotate", &lc::entity::DimDiametric::rotate,
+            "scale", &lc::entity::DimDiametric::scale,
+            "setDragPoints", &lc::entity::DimDiametric::setDragPoints,
+            );
 
-    state["lc"]["entity"]["DimLinear"].setClass(kaguya::UserdataMetatable<lc::entity::DimLinear, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::DimLinear::accept)
-            .addFunction("angle", &lc::entity::DimLinear::angle)
-            .addFunction("boundingBox", &lc::entity::DimLinear::boundingBox)
-            .addFunction("copy", &lc::entity::DimLinear::copy)
-            .addFunction("definitionPoint2", &lc::entity::DimLinear::definitionPoint2)
-            .addFunction("definitionPoint3", &lc::entity::DimLinear::definitionPoint3)
-            .addFunction("dispatch", &lc::entity::DimLinear::dispatch)
-            .addFunction("dragPoints", &lc::entity::DimLinear::dragPoints)
-            .addFunction("mirror", &lc::entity::DimLinear::mirror)
-            .addFunction("modify", &lc::entity::DimLinear::modify)
-            .addFunction("move", &lc::entity::DimLinear::move)
-            .addFunction("oblique", &lc::entity::DimLinear::oblique)
-            .addFunction("rotate", &lc::entity::DimLinear::rotate)
-            .addFunction("scale", &lc::entity::DimLinear::scale)
-            .addFunction("setDragPoints", &lc::entity::DimLinear::setDragPoints)
-                                               );
+    entity.new_usertype<lc::entity::DimLinear>(
+            "DimLinear",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::DimLinear::accept,
+            "angle", &lc::entity::DimLinear::angle,
+            "boundingBox", &lc::entity::DimLinear::boundingBox,
+            "copy", &lc::entity::DimLinear::copy,
+            "definitionPoint2", &lc::entity::DimLinear::definitionPoint2,
+            "definitionPoint3", &lc::entity::DimLinear::definitionPoint3,
+            "dispatch", &lc::entity::DimLinear::dispatch,
+            "dragPoints", &lc::entity::DimLinear::dragPoints,
+            "mirror", &lc::entity::DimLinear::mirror,
+            "modify", &lc::entity::DimLinear::modify,
+            "move", &lc::entity::DimLinear::move,
+            "oblique", &lc::entity::DimLinear::oblique,
+            "rotate", &lc::entity::DimLinear::rotate,
+            "scale", &lc::entity::DimLinear::scale,
+            "setDragPoints", &lc::entity::DimLinear::setDragPoints
+            );
 
-    state["lc"]["entity"]["DimRadial"].setClass(kaguya::UserdataMetatable<lc::entity::DimRadial, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::DimRadial::accept)
-            .addFunction("boundingBox", &lc::entity::DimRadial::boundingBox)
-            .addFunction("copy", &lc::entity::DimRadial::copy)
-            .addFunction("definitionPoint2", &lc::entity::DimRadial::definitionPoint2)
-            .addFunction("dispatch", &lc::entity::DimRadial::dispatch)
-            .addFunction("dragPoints", &lc::entity::DimRadial::dragPoints)
-            .addFunction("leader", &lc::entity::DimRadial::leader)
-            .addFunction("mirror", &lc::entity::DimRadial::mirror)
-            .addFunction("modify", &lc::entity::DimRadial::modify)
-            .addFunction("move", &lc::entity::DimRadial::move)
-            .addFunction("rotate", &lc::entity::DimRadial::rotate)
-            .addFunction("scale", &lc::entity::DimRadial::scale)
-            .addFunction("setDragPoints", &lc::entity::DimRadial::setDragPoints)
-                                               );
+    entity.new_usertype<lc::entity::DimRadial>(
+            "DimRadial",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::DimRadial::accept,
+            "boundingBox", &lc::entity::DimRadial::boundingBox,
+            "copy", &lc::entity::DimRadial::copy,
+            "definitionPoint2", &lc::entity::DimRadial::definitionPoint2,
+            "dispatch", &lc::entity::DimRadial::dispatch,
+            "dragPoints", &lc::entity::DimRadial::dragPoints,
+            "leader", &lc::entity::DimRadial::leader,
+            "mirror", &lc::entity::DimRadial::mirror,
+            "modify", &lc::entity::DimRadial::modify,
+            "move", &lc::entity::DimRadial::move,
+            "rotate", &lc::entity::DimRadial::rotate,
+            "scale", &lc::entity::DimRadial::scale,
+            "setDragPoints", &lc::entity::DimRadial::setDragPoints
+            );
 
-    state["lc"]["entity"]["Ellipse"].setClass(kaguya::UserdataMetatable<lc::entity::Ellipse, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Ellipse, lc::entity::Snapable, lc::entity::Splitable>>()
-            .addFunction("accept", &lc::entity::Ellipse::accept)
-            .addFunction("boundingBox", &lc::entity::Ellipse::boundingBox)
-            .addFunction("copy", &lc::entity::Ellipse::copy)
-            .addFunction("dispatch", &lc::entity::Ellipse::dispatch)
-            .addFunction("findBoxPoints", &lc::entity::Ellipse::findBoxPoints)
-            .addFunction("mirror", &lc::entity::Ellipse::mirror)
-            .addFunction("modify", &lc::entity::Ellipse::modify)
-            .addFunction("move", &lc::entity::Ellipse::move)
-            .addFunction("nearestPointOnPath", &lc::entity::Ellipse::nearestPointOnPath)
-            .addFunction("rotate", &lc::entity::Ellipse::rotate)
-            .addFunction("scale", &lc::entity::Ellipse::scale)
-            .addFunction("snapPoints", &lc::entity::Ellipse::snapPoints)
-                                             );
+    entity.new_usertype<lc::entity::Ellipse>(
+            "Ellipse",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Ellipse, lc::entity::Snapable, lc::entity::Splitable>(),
+            "accept", &lc::entity::Ellipse::accept,
+            "boundingBox", &lc::entity::Ellipse::boundingBox,
+            "copy", &lc::entity::Ellipse::copy,
+            "dispatch", &lc::entity::Ellipse::dispatch,
+            "findBoxPoints", &lc::entity::Ellipse::findBoxPoints,
+            "mirror", &lc::entity::Ellipse::mirror,
+            "modify", &lc::entity::Ellipse::modify,
+            "move", &lc::entity::Ellipse::move,
+            "nearestPointOnPath", &lc::entity::Ellipse::nearestPointOnPath,
+            "rotate", &lc::entity::Ellipse::rotate,
+            "scale", &lc::entity::Ellipse::scale,
+            "snapPoints", &lc::entity::Ellipse::snapPoints
+            );
 
-    state["lc"]["entity"]["Line"].setClass(kaguya::UserdataMetatable<lc::entity::Line, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>>()
-                                           .addFunction("accept", &lc::entity::Line::accept)
-                                           .addFunction("boundingBox", &lc::entity::Line::boundingBox)
-                                           .addFunction("copy", &lc::entity::Line::copy)
-                                           .addFunction("dispatch", &lc::entity::Line::dispatch)
-                                           .addFunction("dragPoints", &lc::entity::Line::dragPoints)
-                                           .addFunction("mirror", &lc::entity::Line::mirror)
-                                           .addFunction("modify", &lc::entity::Line::modify)
-                                           .addFunction("move", &lc::entity::Line::move)
-                                           .addFunction("nearestPointOnPath", &lc::entity::Line::nearestPointOnPath)
-                                           .addFunction("rotate", &lc::entity::Line::rotate)
-                                           .addFunction("scale", &lc::entity::Line::scale)
-                                           .addFunction("setDragPoints", &lc::entity::Line::setDragPoints)
-                                           .addFunction("snapPoints", &lc::entity::Line::snapPoints)
-                                          );
+    entity.new_usertype<lc::entity::Line>(
+            "Line",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>(),
+            "accept", &lc::entity::Line::accept,
+            "boundingBox", &lc::entity::Line::boundingBox,
+            "copy", &lc::entity::Line::copy,
+            "dispatch", &lc::entity::Line::dispatch,
+            "dragPoints", &lc::entity::Line::dragPoints,
+            "mirror", &lc::entity::Line::mirror,
+            "modify", &lc::entity::Line::modify,
+            "move", &lc::entity::Line::move,
+            "nearestPointOnPath", &lc::entity::Line::nearestPointOnPath,
+            "rotate", &lc::entity::Line::rotate,
+            "scale", &lc::entity::Line::scale,
+            "setDragPoints", &lc::entity::Line::setDragPoints,
+            "snapPoints", &lc::entity::Line::snapPoints
+            );
 
-    state["lc"]["entity"]["LWVertex2D"].setClass(kaguya::UserdataMetatable<lc::entity::LWVertex2D>()
-            .addFunction("bulge", &lc::entity::LWVertex2D::bulge)
-            .addFunction("endWidth", &lc::entity::LWVertex2D::endWidth)
-            .addFunction("location", &lc::entity::LWVertex2D::location)
-            .addFunction("move", &lc::entity::LWVertex2D::move)
-            .addFunction("rotate", &lc::entity::LWVertex2D::rotate)
-            .addFunction("scale", &lc::entity::LWVertex2D::scale)
-            .addFunction("startWidth", &lc::entity::LWVertex2D::startWidth)
-                                                );
+    entity.new_usertype<lc::entity::LWVertex2D>(
+            "LWVertex2D",
+            "bulge", &lc::entity::LWVertex2D::bulge,
+            "endWidth", &lc::entity::LWVertex2D::endWidth,
+            "location", &lc::entity::LWVertex2D::location,
+            "move", &lc::entity::LWVertex2D::move,
+            "rotate", &lc::entity::LWVertex2D::rotate,
+            "scale", &lc::entity::LWVertex2D::scale,
+            "startWidth", &lc::entity::LWVertex2D::startWidth,
+            );
 
-    state["lc"]["entity"]["LWPolyline"].setClass(kaguya::UserdataMetatable<lc::entity::LWPolyline, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::LWPolyline::accept)
-            .addFunction("asEntities", &lc::entity::LWPolyline::asEntities)
-            .addFunction("boundingBox", &lc::entity::LWPolyline::boundingBox)
-            .addFunction("closed", &lc::entity::LWPolyline::closed)
-            .addFunction("copy", &lc::entity::LWPolyline::copy)
-            .addFunction("dispatch", &lc::entity::LWPolyline::dispatch)
-            .addFunction("dragPoints", &lc::entity::LWPolyline::dragPoints)
-            .addFunction("elevation", &lc::entity::LWPolyline::elevation)
-            .addFunction("extrusionDirection", &lc::entity::LWPolyline::extrusionDirection)
-            .addFunction("mirror", &lc::entity::LWPolyline::mirror)
-            .addFunction("modify", &lc::entity::LWPolyline::modify)
-            .addFunction("move", &lc::entity::LWPolyline::move)
-            .addFunction("nearestPointOnPath", &lc::entity::LWPolyline::nearestPointOnPath)
-            .addFunction("nearestPointOnPath2", &lc::entity::LWPolyline::nearestPointOnPath2)
-            .addFunction("rotate", &lc::entity::LWPolyline::rotate)
-            .addFunction("scale", &lc::entity::LWPolyline::scale)
-            .addFunction("setDragPoints", &lc::entity::LWPolyline::setDragPoints)
-            .addFunction("snapPoints", &lc::entity::LWPolyline::snapPoints)
-            .addFunction("tickness", &lc::entity::LWPolyline::tickness)
-            .addFunction("vertex", &lc::entity::LWPolyline::vertex)
-            .addFunction("width", &lc::entity::LWPolyline::width)
-                                                );
+    entity.new_usertype<lc::entity::LWPolyline>(
+            "LWPolyline",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>(),
+            "accept", &lc::entity::LWPolyline::accept,
+            "asEntities", &lc::entity::LWPolyline::asEntities,
+            "boundingBox", &lc::entity::LWPolyline::boundingBox,
+            "closed", &lc::entity::LWPolyline::closed,
+            "copy", &lc::entity::LWPolyline::copy,
+            "dispatch", &lc::entity::LWPolyline::dispatch,
+            "dragPoints", &lc::entity::LWPolyline::dragPoints,
+            "elevation", &lc::entity::LWPolyline::elevation,
+            "extrusionDirection", &lc::entity::LWPolyline::extrusionDirection,
+            "mirror", &lc::entity::LWPolyline::mirror,
+            "modify", &lc::entity::LWPolyline::modify,
+            "move", &lc::entity::LWPolyline::move,
+            "nearestPointOnPath", &lc::entity::LWPolyline::nearestPointOnPath,
+            "nearestPointOnPath2", &lc::entity::LWPolyline::nearestPointOnPath2,
+            "rotate", &lc::entity::LWPolyline::rotate,
+            "scale", &lc::entity::LWPolyline::scale,
+            "setDragPoints", &lc::entity::LWPolyline::setDragPoints,
+            "snapPoints", &lc::entity::LWPolyline::snapPoints,
+            "tickness", &lc::entity::LWPolyline::tickness,
+            "vertex", &lc::entity::LWPolyline::vertex,
+            "width", &lc::entity::LWPolyline::width
+                );
 
-    state["lc"]["entity"]["Spline"].setClass(kaguya::UserdataMetatable<lc::entity::Spline, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Spline, lc::entity::Snapable, lc::Visitable, lc::entity::Draggable>>()
-            .addFunction("accept", &lc::entity::Spline::accept)
-            .addFunction("boundingBox", &lc::entity::Spline::boundingBox)
-            .addFunction("copy", &lc::entity::Spline::copy)
-            .addFunction("dispatch", &lc::entity::Spline::dispatch)
-            .addFunction("dragPoints", &lc::entity::Spline::dragPoints)
-            .addFunction("mirror", &lc::entity::Spline::mirror)
-            .addFunction("modify", &lc::entity::Spline::modify)
-            .addFunction("move", &lc::entity::Spline::move)
-            .addFunction("nearestPointOnPath", &lc::entity::Spline::nearestPointOnPath)
-            .addFunction("rotate", &lc::entity::Spline::rotate)
-            .addFunction("scale", &lc::entity::Spline::scale)
-            .addFunction("setDragPoints", &lc::entity::Spline::setDragPoints)
-            .addFunction("snapPoints", &lc::entity::Spline::snapPoints)
-                                            );
+    entity.new_usertype<lc::entity::Spline>(
+            "Spline",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::geo::Spline, lc::entity::Snapable, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::Spline::accept,
+            "boundingBox", &lc::entity::Spline::boundingBox,
+            "copy", &lc::entity::Spline::copy,
+            "dispatch", &lc::entity::Spline::dispatch,
+            "dragPoints", &lc::entity::Spline::dragPoints,
+            "mirror", &lc::entity::Spline::mirror,
+            "modify", &lc::entity::Spline::modify,
+            "move", &lc::entity::Spline::move,
+            "nearestPointOnPath", &lc::entity::Spline::nearestPointOnPath,
+            "rotate", &lc::entity::Spline::rotate,
+            "scale", &lc::entity::Spline::scale,
+            "setDragPoints", &lc::entity::Spline::setDragPoints,
+            "snapPoints", &lc::entity::Spline::snapPoints
+            );
 
-    state["lc"]["entity"]["TextBase"].setClass(kaguya::UserdataMetatable<lc::entity::TextBase>()
-            .addFunction("angle", &lc::entity::TextBase::angle)
-            .addFunction("height", &lc::entity::TextBase::height)
-            .addFunction("insertion_point", &lc::entity::TextBase::insertion_point)
-            .addFunction("style", &lc::entity::TextBase::style)
-            .addFunction("text_value", &lc::entity::TextBase::text_value)
-            .addFunction("textgeneration", &lc::entity::Text::textgeneration)
-            .addFunction("halign", &lc::entity::Text::halign)
-            .addFunction("valign", &lc::entity::Text::valign)
-    );
+    entity.new_usertype<lc::entity::TextBase>(
+            "TextBase",
+            "angle", &lc::entity::TextBase::angle,
+            "height", &lc::entity::TextBase::height,
+            "insertion_point", &lc::entity::TextBase::insertion_point,
+            "style", &lc::entity::TextBase::style,
+            "text_value", &lc::entity::TextBase::text_value,
+            "textgeneration", &lc::entity::Text::textgeneration,
+            "halign", &lc::entity::Text::halign,
+            "valign", &lc::entity::Text::valign
+            );
 
-    state["lc"]["entity"]["Text"].setClass(kaguya::UserdataMetatable<lc::entity::Text, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>>()
-                                           .addFunction("accept", &lc::entity::Text::accept)
-                                           .addFunction("boundingBox", &lc::entity::Text::boundingBox)
-                                           .addFunction("copy", &lc::entity::Text::copy)
-                                           .addFunction("dispatch", &lc::entity::Text::dispatch)
-                                           .addFunction("dragPoints", &lc::entity::Text::dragPoints)
-                                           .addFunction("mirror", &lc::entity::Text::mirror)
-                                           .addFunction("modify", &lc::entity::Text::modify)
-                                           .addFunction("move", &lc::entity::Text::move)
-                                           .addFunction("rotate", &lc::entity::Text::rotate)
-                                           .addFunction("scale", &lc::entity::Text::scale)
-                                           .addFunction("setDragPoints", &lc::entity::Text::setDragPoints)
-                                          );
+    entity.new_usertype<lc::entity::Text>(
+            "Text",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::Text::accept,
+            "boundingBox", &lc::entity::Text::boundingBox,
+            "copy", &lc::entity::Text::copy,
+            "dispatch", &lc::entity::Text::dispatch,
+            "dragPoints", &lc::entity::Text::dragPoints,
+            "mirror", &lc::entity::Text::mirror,
+            "modify", &lc::entity::Text::modify,
+            "move", &lc::entity::Text::move,
+            "rotate", &lc::entity::Text::rotate,
+            "scale", &lc::entity::Text::scale,
+            "setDragPoints", &lc::entity::Text::setDragPoints
+            );
 
-    state["lc"]["entity"]["MText"].setClass(kaguya::UserdataMetatable<lc::entity::MText, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>>()
-        .addFunction("accept", &lc::entity::MText::accept)
-        .addFunction("boundingBox", &lc::entity::MText::boundingBox)
-        .addFunction("copy", &lc::entity::MText::copy)
-        .addFunction("dispatch", &lc::entity::MText::dispatch)
-        .addFunction("dragPoints", &lc::entity::MText::dragPoints)
-        .addFunction("mirror", &lc::entity::MText::mirror)
-        .addFunction("modify", &lc::entity::MText::modify)
-        .addFunction("move", &lc::entity::MText::move)
-        .addFunction("rotate", &lc::entity::MText::rotate)
-        .addFunction("scale", &lc::entity::MText::scale)
-        .addFunction("setDragPoints", &lc::entity::MText::setDragPoints)
-    );
+    entity.new_usertype<lc::entity::MText>(
+            "MText",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::TextBase, lc::Visitable, lc::entity::Draggable>(),
+            "accept", &lc::entity::MText::accept,
+            "boundingBox", &lc::entity::MText::boundingBox,
+            "copy", &lc::entity::MText::copy,
+            "dispatch", &lc::entity::MText::dispatch,
+            "dragPoints", &lc::entity::MText::dragPoints,
+            "mirror", &lc::entity::MText::mirror,
+            "modify", &lc::entity::MText::modify,
+            "move", &lc::entity::MText::move,
+            "rotate", &lc::entity::MText::rotate,
+            "scale", &lc::entity::MText::scale,
+            "setDragPoints", &lc::entity::MText::setDragPoints
+            );
 
-    state["lc"]["entity"]["Image"].setClass(kaguya::UserdataMetatable<lc::entity::Image, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>>()
-                                            .addFunction("accept", &lc::entity::Image::accept)
-                                            .addFunction("base", &lc::entity::Image::base)
-                                            .addFunction("boundingBox", &lc::entity::Image::boundingBox)
-                                            .addFunction("brightness", &lc::entity::Image::brightness)
-                                            .addFunction("contrast", &lc::entity::Image::contrast)
-                                            .addFunction("copy", &lc::entity::Image::copy)
-                                            .addFunction("dispatch", &lc::entity::Image::dispatch)
-                                            .addFunction("fade", &lc::entity::Image::fade)
-                                            .addFunction("height", &lc::entity::Image::height)
-                                            .addFunction("mirror", &lc::entity::Image::mirror)
-                                            .addFunction("modify", &lc::entity::Image::modify)
-                                            .addFunction("move", &lc::entity::Image::move)
-                                            .addFunction("name", &lc::entity::Image::name)
-                                            .addFunction("nearestPointOnPath", &lc::entity::Image::nearestPointOnPath)
-                                            .addFunction("rotate", &lc::entity::Image::rotate)
-                                            .addFunction("scale", &lc::entity::Image::scale)
-                                            .addFunction("snapPoints", &lc::entity::Image::snapPoints)
-                                            .addFunction("uv", &lc::entity::Image::uv)
-                                            .addFunction("vv", &lc::entity::Image::vv)
-                                            .addFunction("width", &lc::entity::Image::width)
-                                           );
+    entity.new_usertype<lc::entity::Image>(
+            "Image",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>(),
+            "accept", &lc::entity::Image::accept,
+            "base", &lc::entity::Image::base,
+            "boundingBox", &lc::entity::Image::boundingBox,
+            "brightness", &lc::entity::Image::brightness,
+            "contrast", &lc::entity::Image::contrast,
+            "copy", &lc::entity::Image::copy,
+            "dispatch", &lc::entity::Image::dispatch,
+            "fade", &lc::entity::Image::fade,
+            "height", &lc::entity::Image::height,
+            "mirror", &lc::entity::Image::mirror,
+            "modify", &lc::entity::Image::modify,
+            "move", &lc::entity::Image::move,
+            "name", &lc::entity::Image::name,
+            "nearestPointOnPath", &lc::entity::Image::nearestPointOnPath,
+            "rotate", &lc::entity::Image::rotate,
+            "scale", &lc::entity::Image::scale,
+            "snapPoints", &lc::entity::Image::snapPoints,
+            "uv", &lc::entity::Image::uv,
+            "vv", &lc::entity::Image::vv,
+            "width", &lc::entity::Image::width
+                );
 
-    state["lc"]["entity"]["Insert"].setClass(kaguya::UserdataMetatable<lc::entity::Insert, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>>()
-            .addFunction("boundingBox", &lc::entity::Insert::boundingBox)
-            .addFunction("copy", &lc::entity::Insert::copy)
-            .addFunction("dispatch", &lc::entity::Insert::dispatch)
-            .addFunction("displayBlock", &lc::entity::Insert::displayBlock)
-            .addFunction("document", &lc::entity::Insert::document)
-            .addFunction("dragPoints", &lc::entity::Insert::dragPoints)
-            .addFunction("mirror", &lc::entity::Insert::mirror)
-            .addFunction("modify", &lc::entity::Insert::modify)
-            .addFunction("move", &lc::entity::Insert::move)
-            .addFunction("nearestPointOnPath", &lc::entity::Insert::nearestPointOnPath)
-            .addFunction("position", &lc::entity::Insert::position)
-            .addFunction("rotate", &lc::entity::Insert::rotate)
-            .addFunction("scale", &lc::entity::Insert::scale)
-            .addFunction("setDragPoints", &lc::entity::Insert::setDragPoints)
-            .addFunction("snapPoints", &lc::entity::Insert::snapPoints)
-                                            );
+    entity.new_usertype<lc::entity::Insert>(
+            "Insert",
+            sol::base_classes, sol::bases<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>(),
+            "boundingBox", &lc::entity::Insert::boundingBox,
+            "copy", &lc::entity::Insert::copy,
+            "dispatch", &lc::entity::Insert::dispatch,
+            "displayBlock", &lc::entity::Insert::displayBlock,
+            "document", &lc::entity::Insert::document,
+            "dragPoints", &lc::entity::Insert::dragPoints,
+            "mirror", &lc::entity::Insert::mirror,
+            "modify", &lc::entity::Insert::modify,
+            "move", &lc::entity::Insert::move,
+            "nearestPointOnPath", &lc::entity::Insert::nearestPointOnPath,
+            "position", &lc::entity::Insert::position,
+            "rotate", &lc::entity::Insert::rotate,
+            "scale", &lc::entity::Insert::scale,
+            "setDragPoints", &lc::entity::Insert::setDragPoints,
+            "snapPoints", &lc::entity::Insert::snapPoints
+            );
 
-    state["lc"]["entity"]["UnmanagedDraggable"].setClass(kaguya::UserdataMetatable<lc::entity::UnmanagedDraggable>()
-            .addFunction("onDragPointClick", &lc::entity::UnmanagedDraggable::onDragPointClick)
-            .addFunction("onDragPointRelease", &lc::entity::UnmanagedDraggable::onDragPointRelease)
-            .addFunction("setDragPoint", &lc::entity::UnmanagedDraggable::setDragPoint)
-                                                        );
+    entity.new_usertype<lc::entity::UnmanagedDraggable>(
+            "UnmanagedDraggable",
+            "onDragPointClick", &lc::entity::UnmanagedDraggable::onDragPointClick,
+            "onDragPointRelease", &lc::entity::UnmanagedDraggable::onDragPointRelease,
+            "setDragPoint", &lc::entity::UnmanagedDraggable::setDragPoint
+            );
 
-    state["lc"]["entity"]["CustomEntity"].setClass(kaguya::UserdataMetatable<lc::entity::CustomEntity, kaguya::MultipleBase<lc::entity::Insert, lc::entity::UnmanagedDraggable>>()
-            .addFunction("copy", &lc::entity::CustomEntity::copy)
-            .addFunction("dragPoints", &lc::entity::CustomEntity::dragPoints)
-            .addFunction("mirror", &lc::entity::CustomEntity::mirror)
-            .addFunction("modify", &lc::entity::CustomEntity::modify)
-            .addFunction("move", &lc::entity::CustomEntity::move)
-            .addFunction("nearestPointOnPath", &lc::entity::CustomEntity::nearestPointOnPath)
-            .addFunction("rotate", &lc::entity::CustomEntity::rotate)
-            .addFunction("scale", &lc::entity::CustomEntity::scale)
-            .addFunction("setDragPoints", &lc::entity::CustomEntity::setDragPoints)
-            .addFunction("snapPoints", &lc::entity::CustomEntity::snapPoints)
-                                                  );
+    entity.new_usertype<lc::entity::CustomEntity>(
+            "CustomEntity",
+            sol::base_classes, sol::bases<lc::entity::Insert, lc::entity::UnmanagedDraggable>(),
+            "copy", &lc::entity::CustomEntity::copy,
+            "dragPoints", &lc::entity::CustomEntity::dragPoints,
+            "mirror", &lc::entity::CustomEntity::mirror,
+            "modify", &lc::entity::CustomEntity::modify,
+            "move", &lc::entity::CustomEntity::move,
+            "nearestPointOnPath", &lc::entity::CustomEntity::nearestPointOnPath,
+            "rotate", &lc::entity::CustomEntity::rotate,
+            "scale", &lc::entity::CustomEntity::scale,
+            "setDragPoints", &lc::entity::CustomEntity::setDragPoints,
+            "snapPoints", &lc::entity::CustomEntity::snapPoints
+            );
 }

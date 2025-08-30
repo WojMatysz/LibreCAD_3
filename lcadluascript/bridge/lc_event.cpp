@@ -12,7 +12,7 @@
 #include <cad/primitive/insert.h>
 #include "lc_event.h"
 
-void import_lc_event_namespace(kaguya::State& state) {
+void import_lc_event_namespace(sol::state & luaVM) {
     state["lc"]["event"] = kaguya::NewTable();
 
     state["lc"]["event"]["AddLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddLayerEvent>()

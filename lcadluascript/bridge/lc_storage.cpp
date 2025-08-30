@@ -7,7 +7,7 @@
 #include <cad/storage/documentimpl.h>
 #include "lc_storage.h"
 
-void import_lc_storage_namespace(kaguya::State& state) {
+void import_lc_storage_namespace(sol::state & luaVM) {
     state["lc"]["storage"] = kaguya::NewTable();
 
     state["lc"]["storage"]["QuadTreeSub"].setClass(kaguya::UserdataMetatable<lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>>()

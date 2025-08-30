@@ -8,7 +8,7 @@
 #include <cad/operations/entitybuilder.h>
 #include "lc_operation.h"
 
-void import_lc_operation_namespace(kaguya::State& state) {
+void import_lc_operation_namespace(sol::state & luaVM) {
     state["lc"]["operation"] = kaguya::NewTable();
 
     state["lc"]["operation"]["Undoable"].setClass(kaguya::UserdataMetatable<lc::operation::Undoable>()
