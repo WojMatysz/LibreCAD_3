@@ -1,31 +1,46 @@
+#include "lc_maths.h"
 #include <cad/math/equation.h>
 #include <cad/math/intersect.h>
-#include "lc_maths.h"
 
 void import_lc_maths_namespace(sol::state & luaVM) {
-    state["lc"]["maths"] = kaguya::NewTable();
+    /*
+    sol::table lc = luaVM["lc"];
+    lc["maths"] = luaVM.create_table();
+    sol::table maths = lc["maths"];
 
-    state["lc"]["maths"]["Equation"].setClass(kaguya::UserdataMetatable<lc::maths::Equation>()
-            .setConstructors<lc::maths::Equation(), lc::maths::Equation(double, double, double, double, double, double), lc::maths::Equation(const std::vector<double> &)>()
-            .addFunction("Coefficients", &lc::maths::Equation::Coefficients)
-            .addFunction("Matrix", &lc::maths::Equation::Matrix)
-            .addFunction("flipXY", &lc::maths::Equation::flipXY)
-            .addFunction("move", &lc::maths::Equation::move)
-            .addOverloadedFunctions("rotate", static_cast<const lc::maths::Equation(lc::maths::Equation::*)(double) const>(&lc::maths::Equation::rotate), static_cast<const lc::maths::Equation(lc::maths::Equation::*)(const lc::geo::Coordinate &, double) const>(&lc::maths::Equation::rotate))
-            .addStaticFunction("rotationMatrix", &lc::maths::Equation::rotationMatrix)
-            .addStaticFunction("translateMatrix", &lc::maths::Equation::translateMatrix)
-                                             );
+    maths.new_usertype<lc::maths::Equation>(
+            "Equation",
+            sol::constructors<
+            lc::maths::Equation(), 
+            lc::maths::Equation(double, double, double, double, double, double), 
+            lc::maths::Equation(const std::vector<double> &)
+            >(),
+            "Coefficients", &lc::maths::Equation::Coefficients,
+            "Matrix", &lc::maths::Equation::Matrix,
+            "flipXY", &lc::maths::Equation::flipXY,
+            "move", &lc::maths::Equation::move,
+            "rotate", sol::overload(
+                static_cast<const lc::maths::Equation(lc::maths::Equation::*)(double) const>(&lc::maths::Equation::rotate), 
+                static_cast<const lc::maths::Equation(lc::maths::Equation::*)(const lc::geo::Coordinate &, double) const>(&lc::maths::Equation::rotate)
+                ),
+            "rotationMatrix", &lc::maths::Equation::rotationMatrix,
+            "translateMatrix", &lc::maths::Equation::translateMatrix
+            );
 
-    state["lc"]["maths"]["IntersectMany"].setClass(kaguya::UserdataMetatable<lc::maths::IntersectMany>()
-            .setConstructors<
-            lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double),
+    maths.new_usertype<lc::maths::IntersectMany>(
+            "IntersectMany",
+            sol::constructors<
+            lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double), 
             lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>)
-            >()
-            .addFunction("result", &lc::maths::IntersectMany::result)
-                                                  );
+            >(),
+            "result", &lc::maths::IntersectMany::result
+            );
 
-    state["lc"]["maths"]["IntersectAgainstOthers"].setClass(kaguya::UserdataMetatable<lc::maths::IntersectAgainstOthers>()
-            .setConstructors<lc::maths::IntersectAgainstOthers(std::vector<lc::entity::CADEntity_CSPtr>, std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double)>()
-            .addFunction("result", &lc::maths::IntersectAgainstOthers::result)
-                                                           );
+    maths.new_usertype<lc::maths::IntersectAgainstOthers>(
+            "IntersectAgainstOthers",
+            sol::constructors<
+            lc::maths::IntersectAgainstOthers(std::vector<lc::entity::CADEntity_CSPtr>, std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double)>(),
+        "result", &lc::maths::IntersectAgainstOthers::result
+            );
+            */
 }

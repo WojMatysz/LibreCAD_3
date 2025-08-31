@@ -70,7 +70,7 @@ void import_lc_entity_namespace(sol::state & luaVM)
             "nearestPointOnPath", &lc::entity::Snapable::nearestPointOnPath,
             "remove_ifDistanceGreaterThen", &lc::entity::Snapable::remove_ifDistanceGreaterThen,
             "snapPoints", &lc::entity::Snapable::snapPoints,
-            "snapPointsCleanup", &lc::entity::Snapable::snapPointsCleanup,
+            "snapPointsCleanup", &lc::entity::Snapable::snapPointsCleanup
             );
 
     entity.new_usertype<lc::entity::Draggable>(
@@ -107,7 +107,7 @@ void import_lc_entity_namespace(sol::state & luaVM)
     //TODO: should be moved to geo
     entity.new_usertype<lc::entity::Tangentable>(
             "Tangentable",
-            "lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity,
+            "lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity
             );
 
     entity.new_usertype<lc::entity::Circle>(
@@ -204,7 +204,7 @@ void import_lc_entity_namespace(sol::state & luaVM)
             "move", &lc::entity::DimDiametric::move,
             "rotate", &lc::entity::DimDiametric::rotate,
             "scale", &lc::entity::DimDiametric::scale,
-            "setDragPoints", &lc::entity::DimDiametric::setDragPoints,
+            "setDragPoints", &lc::entity::DimDiametric::setDragPoints
             );
 
     entity.new_usertype<lc::entity::DimLinear>(
@@ -288,7 +288,7 @@ void import_lc_entity_namespace(sol::state & luaVM)
             "move", &lc::entity::LWVertex2D::move,
             "rotate", &lc::entity::LWVertex2D::rotate,
             "scale", &lc::entity::LWVertex2D::scale,
-            "startWidth", &lc::entity::LWVertex2D::startWidth,
+            "startWidth", &lc::entity::LWVertex2D::startWidth
             );
 
     entity.new_usertype<lc::entity::LWPolyline>(

@@ -13,62 +13,76 @@
 #include "lc_event.h"
 
 void import_lc_event_namespace(sol::state & luaVM) {
-    state["lc"]["event"] = kaguya::NewTable();
 
-    state["lc"]["event"]["AddLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddLayerEvent>()
-            .setConstructors<lc::event::AddLayerEvent(const lc::meta::Layer_CSPtr)>()
-            .addFunction("layer", &lc::event::AddLayerEvent::layer)
-                                                  );
+    sol::table lc = luaVM["lc"];
+    lc["event"] = luaVM.create_table();
+    sol::table event = lc["event"];
 
-    state["lc"]["event"]["RemoveLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveLayerEvent>()
-            .setConstructors<lc::event::RemoveLayerEvent(const lc::meta::Layer_CSPtr)>()
-            .addFunction("layer", &lc::event::RemoveLayerEvent::layer)
-                                                     );
+    event.new_usertype<lc::event::AddLayerEvent>(
+            "AddLayerEvent",
+            sol::constructors<lc::event::AddLayerEvent(const lc::meta::Layer_CSPtr)>(),
+            "layer", &lc::event::AddLayerEvent::layer
+            );
 
-    state["lc"]["event"]["ReplaceLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceLayerEvent>()
-            .setConstructors<lc::event::ReplaceLayerEvent(const lc::meta::Layer_CSPtr, const lc::meta::Layer_CSPtr)>()
-            .addFunction("newLayer", &lc::event::ReplaceLayerEvent::newLayer)
-            .addFunction("oldLayer", &lc::event::ReplaceLayerEvent::oldLayer)
-                                                      );
+    event.new_usertype<lc::event::RemoveLayerEvent>(
+            "RemoveLayerEvent",
+            sol::constructors<lc::event::RemoveLayerEvent(const lc::meta::Layer_CSPtr)>(),
+            "layer", &lc::event::RemoveLayerEvent::layer
+            );
 
-    state["lc"]["event"]["NewWaitingCustomEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::NewWaitingCustomEntityEvent>()
-            .setConstructors<lc::event::NewWaitingCustomEntityEvent(const lc::entity::Insert_CSPtr &)>()
-            .addFunction("insert", &lc::event::NewWaitingCustomEntityEvent::insert)
-                                                                );
+    event.new_usertype<lc::event::ReplaceLayerEvent>(
+            "ReplaceLayerEvent",
+            sol::constructors<lc::event::ReplaceLayerEvent(const lc::meta::Layer_CSPtr, const lc::meta::Layer_CSPtr)>(),
+            "newLayer", &lc::event::ReplaceLayerEvent::newLayer,
+            "oldLayer", &lc::event::ReplaceLayerEvent::oldLayer
+            );
 
-    state["lc"]["event"]["CommitProcessEvent"].setClass(kaguya::UserdataMetatable<lc::event::CommitProcessEvent>()
-            .setConstructors<lc::event::CommitProcessEvent(lc::operation::DocumentOperation_SPtr)>()
-            .addFunction("operation", &lc::event::CommitProcessEvent::operation)
-                                                       );
+    event.new_usertype<lc::event::NewWaitingCustomEntityEvent>(
+            "NewWaitingCustomEntityEvent",
+            sol::constructors<lc::event::NewWaitingCustomEntityEvent(const lc::entity::Insert_CSPtr &)>(),
+            "insert", &lc::event::NewWaitingCustomEntityEvent::insert
+            );
 
-    state["lc"]["event"]["AddEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddEntityEvent>()
-            .setConstructors<lc::event::AddEntityEvent(lc::entity::CADEntity_CSPtr)>()
-            .addFunction("entity", &lc::event::AddEntityEvent::entity)
-                                                   );
+    event.new_usertype<lc::event::CommitProcessEvent>(
+            "CommitProcessEvent",
+            sol::constructors<lc::event::CommitProcessEvent(lc::operation::DocumentOperation_SPtr)>(),
+            "operation", &lc::event::CommitProcessEvent::operation
+            );
 
-    state["lc"]["event"]["RemoveEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveEntityEvent>()
-            .setConstructors<lc::event::RemoveEntityEvent(const lc::entity::CADEntity_CSPtr)>()
-            .addFunction("entity", &lc::event::RemoveEntityEvent::entity)
-                                                      );
+    event.new_usertype<lc::event::AddEntityEvent>(
+            "AddEntityEvent",
+            sol::constructors<lc::event::AddEntityEvent(lc::entity::CADEntity_CSPtr)>(),
+            "entity", &lc::event::AddEntityEvent::entity
+            );
 
-    state["lc"]["event"]["ReplaceEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceEntityEvent>()
-            .setConstructors<lc::event::ReplaceEntityEvent(const lc::entity::CADEntity_CSPtr)>()
-            .addFunction("entity", &lc::event::ReplaceEntityEvent::entity)
-                                                       );
+    event.new_usertype<lc::event::RemoveEntityEvent>(
+            "RemoveEntityEvent",
+            sol::constructors<lc::event::RemoveEntityEvent(const lc::entity::CADEntity_CSPtr)>(),
+            "entity", &lc::event::RemoveEntityEvent::entity
+            );
 
-    state["lc"]["event"]["AddLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddLinePatternEvent>()
-            .setConstructors<lc::event::AddLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr)>()
-            .addFunction("linePattern", &lc::event::AddLinePatternEvent::linePattern)
-                                                        );
+    event.new_usertype<lc::event::ReplaceEntityEvent>(
+            "ReplaceEntityEvent",
+            sol::constructors<lc::event::ReplaceEntityEvent(const lc::entity::CADEntity_CSPtr)>(),
+            "entity", &lc::event::ReplaceEntityEvent::entity
+            );
 
-    state["lc"]["event"]["RemoveLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveLinePatternEvent>()
-            .setConstructors<lc::event::RemoveLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr)>()
-            .addFunction("linePattern", &lc::event::RemoveLinePatternEvent::linePattern)
-                                                           );
+    event.new_usertype<lc::event::AddLinePatternEvent>(
+            "AddLinePatternEvent",
+            sol::constructors<lc::event::AddLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr)>(),
+            "linePattern", &lc::event::AddLinePatternEvent::linePattern
+            );
 
-    state["lc"]["event"]["ReplaceLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceLinePatternEvent>()
-            .setConstructors<lc::event::ReplaceLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr, const lc::meta::DxfLinePatternByValue_CSPtr)>()
-            .addFunction("newLinePattern", &lc::event::ReplaceLinePatternEvent::newLinePattern)
-            .addFunction("oldLinePattern", &lc::event::ReplaceLinePatternEvent::oldLinePattern)
-                                                            );
+    event.new_usertype<lc::event::RemoveLinePatternEvent>(
+            "RemoveLinePatternEvent",
+            sol::constructors<lc::event::RemoveLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr)>(),
+            "linePattern", &lc::event::RemoveLinePatternEvent::linePattern
+            );
+
+    event.new_usertype<lc::event::ReplaceLinePatternEvent>(
+            "ReplaceLinePatternEvent",
+            sol::constructors<lc::event::ReplaceLinePatternEvent(const lc::meta::DxfLinePatternByValue_CSPtr, const lc::meta::DxfLinePatternByValue_CSPtr)>(),
+            "newLinePattern", &lc::event::ReplaceLinePatternEvent::newLinePattern,
+            "oldLinePattern", &lc::event::ReplaceLinePatternEvent::oldLinePattern
+            );
 }

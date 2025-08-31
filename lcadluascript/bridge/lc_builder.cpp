@@ -76,8 +76,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::ArcBuilder>(
             "ArcBuilder", 
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::ArcBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::ArcBuilder::build,
             "center", &lc::builder::ArcBuilder::center,
             "endAngle", &lc::builder::ArcBuilder::endAngle,
@@ -94,8 +94,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
 
     builder.new_usertype<lc::builder::CircleBuilder>("CircleBuilder", 
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::CircleBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::CircleBuilder::build,
             "center", &lc::builder::CircleBuilder::center,
             "radius", &lc::builder::CircleBuilder::radius,
@@ -130,8 +130,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::PointBuilder>(
             "PointBuilder",
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::PointBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::PointBuilder::build,
             "coordinate", &lc::builder::PointBuilder::coordinate,
             "setCoordinate", &lc::builder::PointBuilder::setCoordinate
@@ -139,8 +139,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::DimAlignedBuilder>(
             "DimAlignedBuilder",
-            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             sol::constructors<lc::builder::DimAlignedBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             "build", &lc::builder::DimAlignedBuilder::build,
             "definitionPoint2", &lc::builder::DimAlignedBuilder::definitionPoint2,
             "definitionPoint3", &lc::builder::DimAlignedBuilder::definitionPoint3,
@@ -151,8 +151,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::DimAngularBuilder>(
             "DimAngularBuilder",
-            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             sol::constructors<lc::builder::DimAngularBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             "build", &lc::builder::DimAngularBuilder::build,
             "defLine11", &lc::builder::DimAngularBuilder::defLine11,
             "defLine12", &lc::builder::DimAngularBuilder::defLine12,
@@ -169,8 +169,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::DimDiametricBuilder>(
             "DimDiametricBuilder",
-            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             sol::constructors<lc::builder::DimDiametricBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             "build", &lc::builder::DimDiametricBuilder::build,
             "definitionPoint2", &lc::builder::DimDiametricBuilder::definitionPoint2,
             "leader", &lc::builder::DimDiametricBuilder::leader,
@@ -181,9 +181,9 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
 
     builder.new_usertype<lc::builder::DimLinearBuilder>(
-            "DimLinearBuilder",,
-            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
+            "DimLinearBuilder",
             sol::constructors<lc::builder::DimLinearBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             "angle", &lc::builder::DimLinearBuilder::angle,
             "build", &lc::builder::DimLinearBuilder::build,
             "definitionPoint2", &lc::builder::DimLinearBuilder::definitionPoint2,
@@ -200,8 +200,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::DimRadialBuilder>(
             "DimRadialBuilder",
-            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             sol::constructors<lc::builder::DimRadialBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::DimensionBuilder>(),
             "build", &lc::builder::DimRadialBuilder::build,
             "definitionPoint2", &lc::builder::DimRadialBuilder::definitionPoint2,
             "dimAuto", &lc::builder::DimRadialBuilder::dimAuto,
@@ -216,8 +216,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::EllipseBuilder>(
             "EllipseBuilder",
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::EllipseBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::EllipseBuilder::build,
             "center", &lc::builder::EllipseBuilder::center,
             "endAngle", &lc::builder::EllipseBuilder::endAngle,
@@ -237,8 +237,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::LineBuilder>(
             "LineBuilder", 
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::LineBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::LineBuilder::build,
             "endPoint", &lc::builder::LineBuilder::end,
             "setEndPoint", &lc::builder::LineBuilder::setEnd,
@@ -251,8 +251,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::SplineBuilder>(
             "SplineBuilder", 
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::SplineBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "addControlPoint", &lc::builder::SplineBuilder::addControlPoint,
             "addFitPoint", &lc::builder::SplineBuilder::addFitPoint,
             "addKnotPoint", &lc::builder::SplineBuilder::addKnotPoint,
@@ -284,8 +284,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::LWPolylineBuilder>(
             "LWPolylineBuilder",
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::LWPolylineBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "addLineVertex", &lc::builder::LWPolylineBuilder::addLineVertex,
             "addArcVertex", &lc::builder::LWPolylineBuilder::addArcVertex,
             "modifyLastVertex", &lc::builder::LWPolylineBuilder::modifyLastVertex,
@@ -299,8 +299,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::InsertBuilder>(
             "InsertBuilder", 
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::InsertBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::InsertBuilder::build,
             "checkValues", &lc::builder::InsertBuilder::checkValues,
             "coordinate", &lc::builder::InsertBuilder::coordinate,
@@ -313,8 +313,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
 
     builder.new_usertype<lc::builder::TextBaseBuilder>(
             "TextBaseBuilder",
-            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             sol::constructors<lc::builder::TextBaseBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "insertionPoint", &lc::builder::TextBaseBuilder::insertionPoint,
             "setInsertionPoint", &lc::builder::TextBaseBuilder::setInsertionPoint,
             "textValue", &lc::builder::TextBaseBuilder::textValue,
@@ -326,15 +326,15 @@ void import_lc_builder_namespace(sol::state & luaVM)
             );
 
     builder.new_usertype<lc::builder::TextBuilder>("TextBuilder", 
-            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
             sol::constructors<lc::builder::TextBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
             "build", &lc::builder::TextBuilder::build,
             "copy", &lc::builder::TextBuilder::copy
             );
 
     builder.new_usertype<lc::builder::MTextBuilder>("MTextBuilder", 
-            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
             sol::constructors<lc::builder::MTextBuilder()>(),
+            sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
             "build", &lc::builder::MTextBuilder::build,
             "copy", &lc::builder::MTextBuilder::copy
             );
