@@ -1,8 +1,10 @@
 #include <QMainWindow>
-#include <kaguya/kaguya.hpp>
 
 #include <set>
 #include <map>
+
+#include "sol.hpp"
+
 
 namespace lc
 {
@@ -20,7 +22,7 @@ public:
      * \param qmainWindow QMainWindow which will be casted to MainWindow
      * \param luaState lua state
      */
-    OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState);
+    OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, sol::state & luaVM);
 
     /**
      * \brief Load operations from lua scripts and run init functions
@@ -81,7 +83,7 @@ private:
     void getSetOfGroupElements();
 
 private:
-    kaguya::State& _L;
+    sol::state & _L;
     QMainWindow* qmainWindow;
 
     std::map<std::string, std::set<std::string>> groupElements;

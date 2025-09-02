@@ -6,7 +6,7 @@
 using namespace lc::ui;
 using namespace lc::ui::api;
 
-MenuItem::MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent)
+MenuItem::MenuItem(const char* menuItemName, sol::function callback, QWidget* parent)
     :
     MenuItem(menuItemName, parent)
 {
@@ -39,11 +39,11 @@ void MenuItem::show() {
     setVisible(true);
 }
 
-void MenuItem::addCallback(kaguya::LuaRef callback) {
+void MenuItem::addCallback(sol::function callback) {
     callbacks.push_back(callback);
 }
 
-void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+void MenuItem::addCallback(const char* cb_name, sol::function callback) {
     if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
         return;
     }
@@ -52,7 +52,7 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
     namedCallbacks[cb_name] = callbacks.size() - 1;
 }
 
-void MenuItem::addCheckedCallback(kaguya::LuaRef callback) {
+void MenuItem::addCheckedCallback(sol::function callback) {
     if (!isCheckable()) {
         this->setCheckable(true);
     }

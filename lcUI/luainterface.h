@@ -1,12 +1,5 @@
 #pragma once
 
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
-
 #include <set>
 #include <QMetaObject>
 #include <QMetaMethod>
@@ -18,7 +11,7 @@ extern "C"
 #include <QCoreApplication>
 #include <managers/pluginmanager.h>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 #include "lua/guibridge.h"
 
 namespace lc {
@@ -63,21 +56,21 @@ public:
      * \brief Returns current Lua state.
      * This is used for unit tests.
      */
-    lua_State* luaState();
+    sol::state & luaVM() { return _L; }
 
     static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-    kaguya::LuaRef operation();
+    sol::table operation();
 
-    void setOperation(kaguya::LuaRef);
+    void setOperation(sol::table);
 
     void finishOperation();
 
-    void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
+    void registerEvent(const std::string& event, const sol::object & callback);
 
-    void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
+    void deleteEvent(const std::string& event, const sol::object & callback);
 
-    void triggerEvent(const std::string& event, kaguya::LuaRef args);
+    void triggerEvent(const std::string& event, sol::table args);
 
 private:
     /**
@@ -86,10 +79,10 @@ private:
     void registerGlobalFunctions(QMainWindow* mainWindow);
 
 private:
-    kaguya::State _L;
+    sol::state _L;
     lc::lua::PluginManager _pluginManager;
-    kaguya::LuaRef _operation;
-    std::map<std::string, std::vector<kaguya::LuaRef>> _events;
+    sol::table _operation;
+    std::map<std::string, std::vector<sol::object>> _events;
 };
 }
 }

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+
 #include "ui_mainwindow.h"
 #include "dialogs/aboutdialog.h"
 #include "dialogs/textdialog.h"
@@ -83,91 +84,89 @@ MainWindow::~MainWindow()
 
 void MainWindow::addOtherMenus() {
     // add lua script
-    kaguya::State state(_luaInterface.luaState());
-    state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
-    state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
-    state["run_aboutdialog"] = kaguya::function([&] {
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM.script("run_luascript = function() lc.LuaScript(mainWindow):show() end");
+    luaVM.script("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
+
+    luaVM.set_function("run_aboutdialog", [&] {
         auto aboutDialog = new dialog::AboutDialog(this);
         aboutDialog->show();
         });
-    state["run_textdialog"] = kaguya::function([&] {
+    luaVM.set_function("run_textdialog", [&] {
         auto textDialog = new dialog::TextDialog(this, this);
         textDialog->show();
         });
 
     api::Menu* luaMenu = addMenu("Lua");
-    luaMenu->addItem("Run script", state["run_luascript"]);
-    luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+    luaMenu->addItem("Run script", luaVM["run_luascript"]);
+    luaMenu->addItem("Customize Toolbar", luaVM["run_customizetoolbar"]);
 
     api::Menu* viewMenu = addMenu("View");
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(1) end");
-    viewMenu->addItem("Default Layout 1", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(2) end");
-    viewMenu->addItem("Default Layout 2", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
-    viewMenu->addItem("Default Layout 3", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:loadDockLayout() end");
-    viewMenu->addItem("Load Dock Layout", state["changeLayout"]);
-    state.dostring("changeLayout = function() mainWindow:saveDockLayout() end");
-    viewMenu->addItem("Save Dock Layout", state["changeLayout"]);
+    luaVM.script("changeLayout = function() mainWindow:changeDockLayout(1) end");
+    viewMenu->addItem("Default Layout 1", luaVM["changeLayout"]);
+    luaVM.script("changeLayout = function() mainWindow:changeDockLayout(2) end");
+    viewMenu->addItem("Default Layout 2", luaVM["changeLayout"]);
+    luaVM.script("changeLayout = function() mainWindow:changeDockLayout(3) end");
+    viewMenu->addItem("Default Layout 3", luaVM["changeLayout"]);
+    luaVM.script("changeLayout = function() mainWindow:loadDockLayout() end");
+    viewMenu->addItem("Load Dock Layout", luaVM["changeLayout"]);
+    luaVM.script("changeLayout = function() mainWindow:saveDockLayout() end");
+    viewMenu->addItem("Save Dock Layout", luaVM["changeLayout"]);
 
     api::Menu* aboutMenu = addMenu("About");
-    aboutMenu->addItem("About", state["run_aboutdialog"]);
+    aboutMenu->addItem("About", luaVM["run_aboutdialog"]);
 
     api::Menu* textMenu = menuByName("Create")->menuByName("Text");
     if (textMenu != nullptr) {
-        textMenu->addItem("Text Dialog", state["run_textdialog"]);
+        textMenu->addItem("Text Dialog", luaVM["run_textdialog"]);
     }
 }
 
-void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method) {
+void MainWindow::runOperation(sol::table operation, const std::string & init_method)
+{
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
     _cadMdiChild.viewer()->setOperationActive(true);
-    kaguya::State state(_luaInterface.luaState());
+    sol::state & luaVM = _luaInterface.luaVM();
 
     // if current operation had extra operation _toolbar icons, add them
-    if (!operation["operation_options"].isNilref())
+    if(operation["operation_options"].valid()) 
     {
-        if (operation_options.find(operation["command_line"].get<std::string>() + init_method) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"].get<std::string>() + init_method];
+        std::string commandLine = operation["command_line"];
 
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
-            }
-        } else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
-            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
+        // try first key, then fallback to commandLine
+        auto it = operation_options.find(commandLine + init_method);
+        if(it == operation_options.end()) 
+        {
+            it = operation_options.find(commandLine);
+        }
 
-            for (auto op : options) {
-                // run operation which adds option icon to _toolbar
-                op();
-            }
+        if(it != operation_options.end()) 
+        {
+            for(sol::function& optionCall : it->second) optionCall();
         }
     }
 
-    // add _toolbar cancel button
-    state.dostring("finish_op = function() finish_operation() end");
-    _toolbar.addButton("", ":/icons/quit.svg", "Current operation", state["finish_op"], "Cancel");
-    state["finish_op"] = nullptr;
+    // add toolbar cancel button
+    luaVM.script(R"(finish_op = function() finish_operation() end)");
+    _toolbar.addButton("", ":/icons/quit.svg", "Current operation", luaVM["finish_op"], "Cancel");
+    luaVM["finish_op"] = sol::lua_nil;
 
-    // call operation to run CreateOperations init method etc
-    _luaInterface.setOperation(operation.call<kaguya::LuaRef>());
-    kaguya::LuaRef op = _luaInterface.operation();
-    if (init_method == "") {
-        if (!op["_init_default"].isNilref()) {
-            op["_init_default"](op);
-        }
-    }
-    else {
-        op[init_method.c_str()](op);
-    }
+    // call operation (__call metamethod) and run init
+    sol::function operationCall = operation;
+    sol::table op = operationCall();
+    _luaInterface.setOperation(op);
+
+    sol::function initFunction;
+    if(init_method.empty()) initFunction = op["_init_default"];
+    else initFunction = op[init_method];
+    if(initFunction.valid()) initFunction(op);  // pass self
 
     _oldOperation = operation;
     _oldOpInitMethod = init_method;
 }
 
-void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
+void MainWindow::addOperationOptions(std::string operation, std::vector<sol::function> options) {
     operation_options[operation] = options;
 }
 
@@ -246,14 +245,14 @@ void MainWindow::ConnectInputEvents()
 }
 
 void MainWindow::runLastOperation() {
-    if (!_oldOperation.isNilref()) {
+    if (_oldOperation.valid()) {
         runOperation(_oldOperation, _oldOpInitMethod);
     }
 }
 
 /* Menu functions */
 
-void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
+void MainWindow::connectMenuItem(const std::string& itemName, sol::function callback)
 {
     lc::ui::api::MenuItem* menuItem = findMenuItemByObjectName(itemName.c_str());
     menuItem->addCallback(callback);
@@ -499,104 +498,114 @@ void MainWindow::removeMenu(int position) {
 void MainWindow::triggerMousePressed()
 {
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mousePressed"] = kaguya::NewTable();
-    state["mousePressed"]["position"] = cursorPos;
-    state["mousePressed"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["mousePressed"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["mousePressed"] = luaVM.create_table();
+    sol::table mousePressed = luaVM["mousePressed"];
+    mousePressed["position"] = cursorPos;
+    mousePressed["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("point", mousePressed);
 
     emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseRelease"] = kaguya::NewTable();
-    state["mouseRelease"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseRelease", state["mouseRelease"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["mouseRelease"] = luaVM.create_table();
+    sol::table mouseRelease = luaVM["mouseRelease"];
+    mouseRelease["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("mouseRelease", mouseRelease);
 }
 
 void MainWindow::triggerSelectionChanged()
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["selectionChanged"] = kaguya::NewTable();
-    state["selectionChanged"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("selectionChanged", state["selectionChanged"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["selectionChanged"] = luaVM.create_table();
+    sol::table selectionChanged = luaVM["selectionChanged"];
+    selectionChanged["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("selectionChanged", selectionChanged);
 }
 
 void MainWindow::triggerMouseMoved()
 {
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
-    kaguya::State state(_luaInterface.luaState());
-    state["mouseMove"] = kaguya::NewTable();
-    state["mouseMove"]["position"] = cursorPos;
-    state["mouseMove"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("mouseMove", state["mouseMove"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["mouseMove"] = luaVM.create_table();
+    sol::table mouseMove = luaVM["mouseMove"];
+    mouseMove["position"] = cursorPos;
+    mouseMove["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("mouseMove", mouseMove);
 }
 
 void MainWindow::triggerKeyPressed(int key)
 {
+    sol::state & luaVM = _luaInterface.luaVM();
     if (key == Qt::Key_Escape)
     {
         // run finish operation
-        auto state = _luaInterface.luaState();
-        _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+        _luaInterface.triggerEvent("finishOperation", luaVM.globals()); // closest equivalent to Kaguya version
+        // This line should be sufficient here, sending empty table - nice to test later.
+        // _luaInterface.triggerEvent("finishOperation", luaVM.create_table()); 
     }
     else
     {
-        kaguya::State state(_luaInterface.luaState());
-        state["keyEvent"] = kaguya::NewTable();
-        state["keyEvent"]["key"] = key;
-        state["keyEvent"]["widget"] = &_cadMdiChild;
-        _luaInterface.triggerEvent("keyPressed", state["keyEvent"]);
+        luaVM["keyEvent"] = luaVM.create_table();
+        sol::table keyEvent = luaVM["keyEvent"];
+        keyEvent["key"] = key;
+        keyEvent["widget"] = &_cadMdiChild;
+        _luaInterface.triggerEvent("keyPressed", keyEvent);
     }
 }
 
 void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["coordinateEntered"] = kaguya::NewTable();
-    state["coordinateEntered"]["position"] = coordinate;
-    state["coordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["coordinateEntered"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["coordinateEntered"] = luaVM.create_table();
+    sol::table coordinateEntered = luaVM["coordinateEntered"];
+    coordinateEntered["position"] = coordinate;
+    coordinateEntered["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("point", coordinateEntered);
 
     emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["relCoordinateEntered"] = kaguya::NewTable();
-    state["relCoordinateEntered"]["position"] = lastPoint + coordinate;
-    state["relCoordinateEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("point", state["relCoordinateEntered"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["relCoordinateEntered"] = luaVM.create_table();
+    sol::table relCoordinateEntered = luaVM["relCoordinateEntered"];
+    relCoordinateEntered["position"] = lastPoint + coordinate;
+    relCoordinateEntered["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("point", relCoordinateEntered);
 
     emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["numberEntered"] = kaguya::NewTable();
-    state["numberEntered"]["number"] = number;
-    state["numberEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("number", state["numberEntered"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["numberEntered"] = luaVM.create_table();
+    sol::table numberEntered = luaVM["numberEntered"];
+    numberEntered["number"] = number;
+    numberEntered["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("number", numberEntered);
 }
 
 void MainWindow::triggerTextEntered(QString text)
 {
-    kaguya::State state(_luaInterface.luaState());
-    state["textEntered"] = kaguya::NewTable();
-    state["textEntered"]["text"] = text.toStdString();
-    state["textEntered"]["widget"] = &_cadMdiChild;
-    _luaInterface.triggerEvent("text", state["textEntered"]);
+    sol::state & luaVM = _luaInterface.luaVM();
+    luaVM["textEntered"] = luaVM.create_table();
+    sol::table textEntered = luaVM["textEntered"];
+    textEntered["text"] = text.toStdString();
+    textEntered["widget"] = &_cadMdiChild;
+    _luaInterface.triggerEvent("text", textEntered);
 }
 
 void MainWindow::triggerFinishOperation()
 {
-    auto state = _luaInterface.luaState();
-    _luaInterface.triggerEvent("operationFinished", kaguya::LuaRef(state));
-    _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+    sol::state & luaVM = _luaInterface.luaVM();
+    _luaInterface.triggerEvent("operationFinished", luaVM.globals());
+    _luaInterface.triggerEvent("finishOperation", luaVM.globals());
 }
 
 void MainWindow::triggerCommandEntered(QString command)
@@ -706,10 +715,19 @@ void MainWindow::selectionChanged() {
 }
 
 std::string MainWindow::lastOperationName() {
-    return _oldOperation["name"].get<std::string>();
+    try
+    {
+        std::string name = _oldOperation["name"];
+        return name;
+    }
+    catch(const sol::error & err)
+    {
+        std::cerr << "MainWindow: Can not retrive lastOperationName\n" << err.what() << "\n";
+        return "";
+    }
 }
 
-kaguya::LuaRef MainWindow::currentOperation() {
+sol::table MainWindow::currentOperation() {
     return _luaInterface.operation();
 }
 

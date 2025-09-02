@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 #include <unordered_map>
 #include <QAction>
@@ -25,7 +25,7 @@ public:
     * \param LuaRef callback
     * \param pointer to QWidget parent
     */
-    MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent = nullptr);
+    MenuItem(const char* menuItemName, sol::function callback, QWidget* parent = nullptr);
 
     /**
     * \brief Menu item Constructor
@@ -50,20 +50,20 @@ public:
     * \brief add callback for item
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef callback);
+    void addCallback(sol::function callback);
 
     /**
     * \brief add checked callback for item
     * \param LuaRef callback
     */
-    void addCheckedCallback(kaguya::LuaRef callback);
+    void addCheckedCallback(sol::function callback);
 
     /**
     * \brief add named callback for item
     * \param string callback name to identify callback
     * \param LuaRef callback
     */
-    void addCallback(const char* cb_name, kaguya::LuaRef callback);
+    void addCallback(const char* cb_name, sol::function callback);
 
     /**
     * \brief remove named callback
@@ -124,8 +124,8 @@ private:
     void updateItemPositionsAfterSet(QList<QAction*>& items);
 
 private:
-    std::vector<kaguya::LuaRef> callbacks;
-    std::vector<kaguya::LuaRef> _checkedCallbacks;
+    std::vector<sol::function> callbacks;
+    std::vector<sol::function> _checkedCallbacks;
     std::unordered_map<std::string, int> namedCallbacks;
     int _position;
 };

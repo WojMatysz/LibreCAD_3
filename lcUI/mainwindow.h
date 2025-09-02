@@ -1,7 +1,7 @@
 #pragma once
 
 #include "luainterface.h"
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp" 
 
 #include <QMainWindow>
 #include <QShortcut>
@@ -79,13 +79,13 @@ namespace lc
             * \brief Connect existing menu item to lua callback function
             * \param itemName item name , callback - function callback
             */
-            void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
+            void connectMenuItem(const std::string& itemName, sol::function callback);
 
             /**
             * \brief Run tool operation
             * \param operation Operation class , init_method - which init_method to run
             */
-            void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
+            void runOperation(sol::table operation, const std::string& init_method = "");
 
             /**
             * \brief Called on operation finish
@@ -97,7 +97,7 @@ namespace lc
             *        are to be added during the operation
             * \param operation string to identify for which operation , options - list of functions to be run
             */
-            void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
+            void addOperationOptions(std::string operation, std::vector<sol::function> options);
 
             /**
             * \brief Read UI settings on program start up
@@ -117,7 +117,7 @@ namespace lc
             /**
             * \brief Return the current operation
             */
-            kaguya::LuaRef currentOperation();
+            sol::table currentOperation();
 
             /**
             * \brief Copy selected entities to the clipboard
@@ -285,12 +285,12 @@ namespace lc
             lc::ui::CopyManager _copyManager;
 
             lc::geo::Coordinate lastPoint;
-            std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
+            std::map<std::string, std::vector<sol::function>> operation_options;
 
             QMap<QString, api::Menu*> menuMap;
             int _contextMenuManagerId;
 
-            kaguya::LuaRef _oldOperation;
+            sol::table _oldOperation;
             std::string _oldOpInitMethod;
 
             // Shortcuts

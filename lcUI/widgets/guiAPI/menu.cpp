@@ -57,7 +57,7 @@ MenuItem* Menu::addItem(const char* menuItemLabel) {
     return newItem;
 }
 
-MenuItem* Menu::addItem(const char* menuItemLabel, kaguya::LuaRef callback) {
+MenuItem* Menu::addItem(const char* menuItemLabel, sol::function callback) {
     MenuItem* newItem = new MenuItem(menuItemLabel, callback);
     addItem(newItem);
 

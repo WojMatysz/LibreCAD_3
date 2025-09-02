@@ -26,26 +26,26 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
 
-    luaOpenGUIBridge(_L.state());
+    luaOpenGUIBridge(_L);
 
     _L["luaInterface"] = this;
     registerGlobalFunctions(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-    bool s = _L.dofile(luaFile.toStdString().c_str());
+    sol::protected_function_result result = _L.script_file(luaFile.toStdString(), sol::script_pass_on_error);
 
     std::string luaPath = _L["lua_path"];
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
-    if (s) {
-        const char* out = lua_tostring(_L.state(), -1);
-        if (out == nullptr) {
-            LOG_WARNING << "Lua output null" << std::endl;
-        }
-        else {
-            LOG_INFO << "Lua output:" << out << std::endl;
-        }
-        lua_pop(_L.state(), 1);
+    if (!result.valid()) {
+        sol::error err = result;
+        LOG_WARNING << "Lua error: " << err.what() << std::endl;
+    } 
+    else 
+    {
+        sol::optional<std::string> out = result;
+        if(out) LOG_INFO << "Lua output: " << *out << "\n";
+        else LOG_INFO << "Lua script executed successfully (no string result)\n";
     }
 
     _pluginManager.loadPlugins();
@@ -67,9 +67,6 @@ void LuaInterface::hideUI(bool hidden) {
     _L["hideUI"] = hidden;
 }
 
-lua_State* LuaInterface::luaState() {
-    return _L.state();
-}
 
 std::vector<std::string> LuaInterface::pluginList(const char* path) {
     std::vector<std::string> plugins;
@@ -100,44 +97,54 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
     return fopen(path.toStdString().c_str(), mode);
 }
 
-kaguya::LuaRef LuaInterface::operation() {
+sol::table LuaInterface::operation() {
     return _operation;
 }
 
-void LuaInterface::setOperation(kaguya::LuaRef operation) {
+void LuaInterface::setOperation(sol::table operation) {
     _operation = std::move(operation);
 }
 
-void LuaInterface::finishOperation() {
-    if(!_operation.isNilref() && !_operation["close"].isNilref()) {
-        _operation["close"](_operation);
+void LuaInterface::finishOperation() 
+{
+    if(_operation.valid())
+    {
+        sol::function close = _operation["close"];
+        if(close.valid()) close(_operation);
     }
 }
 
-void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
-    if(callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
-        return;
+void LuaInterface::registerEvent(const std::string & event, const sol::object & callback) {
+    if (!callback.valid()) return;
+
+    if (callback.is<sol::table>()) {
+        sol::table t = callback.as<sol::table>();
+        sol::function onEvent = t["onEvent"];
+        if (!onEvent.valid()) return;  // table without onEvent: ignore
     }
 
+    // either a function, or a table with onEvent
     _events[event].push_back(callback);
 }
 
-void LuaInterface::deleteEvent(const std::string& event, const kaguya::LuaRef& callback) {
+void LuaInterface::deleteEvent(const std::string& event, const sol::object & callback) 
+{
     auto it = std::find(_events[event].begin(), _events[event].end(), callback);
-
-    if(it != _events[event].end()) {
-        _events[event].erase(it);
-    }
+    if(it != _events[event].end()) _events[event].erase(it);
+    
 }
 
-void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
+void LuaInterface::triggerEvent(const std::string& event, sol::table args) {
     auto events = _events[event];
     for(auto eventCallback : events) {
-        if(eventCallback.type() == LUA_TFUNCTION) {
-            eventCallback(event, args);
+        if(eventCallback.valid() && eventCallback.is<sol::function>()) {
+
+            sol::function callback = eventCallback;
+            callback(event, args);
         }
-        else if(eventCallback.type() == LUA_TTABLE) {
-            eventCallback["onEvent"](eventCallback, event, args);
+        else if(eventCallback.valid() && eventCallback.is<sol::table>()) {
+            sol::table callbackTable = eventCallback;
+            callbackTable["onEvent"](eventCallback, event, args);
         }
     }
 }
@@ -145,18 +152,18 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
 void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     // register common functions i.e. run_basic_operation and message
     _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
-    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
-    _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
-    _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
+    _L.script("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    _L.script("finish_operation = function() luaInterface:finishOperation() end");
+    _L.script("operationFinished = function() mainWindow:operationFinished() end");
 
     // cli command helper functions
-    _L.dostring("message = function(m) mainWindow:cliCommand():write(tostring(m)) end");
-    _L.dostring("cli_get_text = function(getText) mainWindow:cliCommand():returnText(getText) end");
-    _L.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
-    _L.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
-    _L.dostring("add_command('CLEAR', function() mainWindow:cliCommand():clear() end)");
-    _L.dostring("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
+    _L.script("message = function(m) mainWindow:cliCommand():write(tostring(m)) end");
+    _L.script("cli_get_text = function(getText) mainWindow:cliCommand():returnText(getText) end");
+    _L.script("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
+    _L.script("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
+    _L.script("add_command('CLEAR', function() mainWindow:cliCommand():clear() end)");
+    _L.script("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
 
-    _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
-    _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
+    _L.script("luaInterface:registerEvent('finishOperation', finish_operation)");
+    _L.script("luaInterface:registerEvent('operationFinished', operationFinished)");
 }

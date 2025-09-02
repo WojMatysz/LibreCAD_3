@@ -3,7 +3,7 @@
 #include <QMenu>
 #include <QMenuBar>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 #include "menuitem.h"
 
 namespace lc
@@ -59,7 +59,7 @@ public:
     * \param LuaRef callback
     * \return pointer to menu item
     */
-    MenuItem* addItem(const char* menuItemLabel, kaguya::LuaRef callback);
+    MenuItem* addItem(const char* menuItemLabel, sol::function callback);
 
     /**
     * \brief Add men

@@ -11,29 +11,30 @@
 
 using namespace lc::ui;
 
-OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState)
+OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, sol::state & luaVM)
     :
     qmainWindow(qmainWindow),
-    _L(luaState) {
+    _L(luaVM) {
     loadLuaOperations(luaPath);
 }
 
-void OperationLoader::loadLuaOperations(const std::string& luaPath) {
-    // call operations and createoperations first
-    _L.dofile(luaPath + "/actions/operations.lua");
-    _L.dofile(luaPath + "/createActions/createOperations.lua");
+void OperationLoader::loadLuaOperations(const std::string& luaPath)
+{
+    // load operation definitions
+    _L.script_file(luaPath + "/actions/operations.lua");
+    _L.script_file(luaPath + "/createActions/createOperations.lua");
     loadLuaFolder("createActions", "createOperations", luaPath);
 
     // create list of all operations in creationGroup and dimensionsGroup
     getSetOfGroupElements();
     loadLuaFolder("actions", "operations", luaPath);
 
-    // fetch a list of all keys from the state table
-    kaguya::LuaTable globalTable(_L.globalTable());
-    std::vector<kaguya::LuaRef> globalKeys = globalTable.keys();
+    // fetch all globals from the Lua state
+    sol::table globalTable = _L.globals();
 
-    // list of properties to look out for in the operation
-    std::set<std::string> initProperties = {
+    // properties to track inside operation definitions - this is what we are looking for
+    std::set<std::string> interestingProperties = 
+    {
         "init",
         "command_line",
         "menu_actions",
@@ -43,52 +44,46 @@ void OperationLoader::loadLuaOperations(const std::string& luaPath) {
         "context_transitions"
     };
 
-    /* Loop through all keys to search for the ones containing "Operation" in their name,
-     * Call initialize operation with list of all found properties for the operation
-     */
-    for (kaguya::LuaRef v : globalKeys)
+    // loop through all global Lua variables
+    for (auto& globalEntry : globalTable) 
     {
-        if (v.isType<std::string>())
+        sol::object globalKey = globalEntry.first;
+        sol::object globalValue = globalEntry.second;
+
+        if (!globalKey.is<std::string>()) continue;
+        std::string globalName = globalKey.as<std::string>();
+
+        // look for globals whose name contains "Operation" and is a table
+        if (globalName.find("Operation") != std::string::npos && globalValue.is<sol::table>())
         {
-            std::string vkey = std::string(v.get<std::string>());
+            sol::table operationTable = globalValue.as<sol::table>();
+            foundProperties[globalName] = {};
 
-            // if Operation is found in key e.g. LineOperations
-            if (vkey.find("Operation") < vkey.length() && _L[vkey].type() == _L[vkey].TYPE_TABLE) {
-                kaguya::LuaTable opTable = _L[vkey];
-                foundProperties[vkey] = std::set<std::string>();
-
-                for (kaguya::LuaRef& op : opTable.keys())
-                {
-                    if (op.isType<std::string>())
-                    {
-                        std::string opkey = std::string(op.get<std::string>());
-
-                        // if property is in properties we are looking for, add it in foundProperties
-                        if (initProperties.find(opkey) != initProperties.end()) {
-                            foundProperties[vkey].insert(opkey);
-                        }
-                    }
-                }
-
-                // determine group name for operation
-                if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
-                    groupNames[vkey] = "Creation";
-                }
-                else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
-                    groupNames[vkey] = "Dimensions";
-                }
-                else {
-                    // if not in creation group or dimension group, it has to be in the modify group
-                    groupNames[vkey] = "Modify";
-                }
-
-                initializeOperation(vkey);
+            // check for interesting properties in the operation table
+            for (auto& operationEntry : operationTable) 
+            {
+                sol::object propertyKey = operationEntry.first;
+                if (!propertyKey.is<std::string>()) continue;
+                std::string propertyName = propertyKey.as<std::string>();
+                // if we found property from the set, then map it at current name
+                if (interestingProperties.count(propertyName)) foundProperties[globalName].insert(propertyName);
             }
+
+            // assign group name for this operation
+            if (groupElements.at("creationGroupElements").count(globalName)) groupNames[globalName] = "Creation";
+            else if (groupElements.at("dimensionsGroupElements").count(globalName)) groupNames[globalName] = "Dimensions";
+            else groupNames[globalName] = "Modify";
+
+
+            // initialize the operation
+            initializeOperation(globalName);
         }
     }
 
-    _L["run_op"] = nullptr;
+    // cleanup
+    _L["run_op"] = sol::lua_nil; 
 }
+
 
 void OperationLoader::loadLuaFolder(const std::string folderName, const std::string& fileToSkip, const std::string& luaPath) {
     QDir folderDir((luaPath + "/" + folderName).c_str());
@@ -98,30 +93,30 @@ void OperationLoader::loadLuaFolder(const std::string folderName, const std::str
         std::string filename = str.toStdString();
         // skip fileToSkip.lua as it has been already called
         if (str.toStdString() != fileToSkip) {
-            _L.dofile(luaPath + "/" + folderName + "/" + filename);
+            _L.script_file(luaPath + "/" + folderName + "/" + filename);
         }
     }
 }
 
 void OperationLoader::getSetOfGroupElements() {
-    groupElements["creationGroupElements"] = std::set<std::string>();
-    groupElements["dimensionsGroupElements"] = std::set<std::string>();
+    groupElements["creationGroupElements"] = {};
+    groupElements["dimensionsGroupElements"] = {};
+
+    // fetch all globals from the Lua state
+    sol::table globalTable = _L.globals();
 
     // insert elements into their respective sets
-    for (kaguya::LuaRef v : _L.globalTable().keys())
+    for (auto & globalEntry : globalTable)
     {
-        if (v.isType<std::string>()) {
-            std::string vkey = std::string(v.get<std::string>());
+        sol::object globalKey = globalEntry.first;
+        sol::object globalValue = globalEntry.second;
+        if (!globalKey.is<std::string>()) continue;
+        std::string globalName = globalKey.as<std::string>();
 
-            if (vkey.find("Operation") < vkey.length()) {
-                if (vkey.find("Dim") < vkey.length()) {
-                    groupElements["dimensionsGroupElements"].insert(vkey);
-                }
-                else {
-                    groupElements["creationGroupElements"].insert(vkey);
-                }
-            }
-        }
+        if (globalName.find("Operation") == std::string::npos) continue;
+
+        if (globalName.find("Dim") != std::string::npos) groupElements["dimensionsGroupElements"].insert(globalName);
+        else groupElements["creationGroupElements"].insert(globalName);
     }
 }
 
