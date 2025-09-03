@@ -74,7 +74,7 @@ public:
     /**
      * \brief Add button to toolbar
      */
-    void addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip = "", bool checkable = false, const char* tabName = "Quick Access");
+    void addButton(const char* name, const char* icon, const char* groupBox, sol::function cb, const char* tooltip = "", bool checkable = false, const char* tabName = "Quick Access");
 
     /**
      * \brief Remove group from quickaccesstab if it exists

@@ -4,7 +4,7 @@
 #include <QPushButton>
 
 #include "inputgui.h"
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc {
 namespace ui {
@@ -33,13 +33,13 @@ public:
     /**
     * \brief Do nothing since button does not have a value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getLuaValue(sol::table & table) override;
 
     /**
     * \brief Add button callback
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(sol::function cb);
 
     /**
     * \brief Click the button
@@ -72,7 +72,7 @@ protected:
     void pasteValue(QDataStream& stream) override;
 
 private:
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<sol::function> _callbacks;
 };
 }
 }

@@ -52,7 +52,7 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
     return button;
 }
 
-ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback) {
+ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* buttonIcon, sol::function callback) {
     ToolbarButton* button = new ToolbarButton(buttonName, buttonIcon, callback);
     addButton(button);
     return button;

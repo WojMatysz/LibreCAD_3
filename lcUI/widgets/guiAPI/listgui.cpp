@@ -47,8 +47,9 @@ ListGUI::~ListGUI()
     delete ui;
 }
 
-void ListGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = kaguya::NewTable();
+void ListGUI::getLuaValue(sol::table & table) {
+    sol::state_view luaVM{table.lua_state()};
+    table[_key] = luaVM.create_table();
 
     for (InputGUI* inputWidget : itemList) {
         if (inputWidget != nullptr) {
@@ -108,9 +109,9 @@ void ListGUI::plusButtonClicked() {
         itemIdCount++;
         addItem(newkey, coordWidget);
 
-        for (kaguya::LuaRef& cb : _callbacks) {
-            coordWidget->addFinishCallback(cb);
-            cb();
+        for (const auto & callback : _callbacks) {
+            coordWidget->addFinishCallback(callback);
+            callback();
         }
     }
 
@@ -120,9 +121,9 @@ void ListGUI::plusButtonClicked() {
         itemIdCount++;
         addItem(newkey, lwVertexGroup);
 
-        for (kaguya::LuaRef& cb : _callbacks) {
-            lwVertexGroup->addCallback(cb);
-            cb();
+        for (const auto & callback : _callbacks) {
+            lwVertexGroup->addCallback(callback);
+            callback();
         }
     }
 }
@@ -144,8 +145,8 @@ void ListGUI::minusButtonClicked() {
     }
     selectedItem->setHidden(true);
 
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb();
+    for (const auto & callback : _callbacks) {
+        callback();
     }
 
     listWidget->setCurrentItem(listWidget->item(0));
@@ -216,7 +217,7 @@ void ListGUI::setValue(std::vector<lc::builder::LWBuilderVertex> builderVertices
     }
 }
 
-void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
+void ListGUI::addCallbackToAll(sol::function cb) {
     _callbacks.push_back(cb);
     if (_listType == ListType::COORDINATE) {
         for (InputGUI* inputWidget : itemList) {

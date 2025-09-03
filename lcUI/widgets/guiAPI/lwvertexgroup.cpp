@@ -8,7 +8,7 @@ LWVertexGroup::LWVertexGroup(std::string label, QWidget* parent)
 {
 }
 
-void LWVertexGroup::addCallback(kaguya::LuaRef cb) {
+void LWVertexGroup::addCallback(sol::function cb) {
     coordgui->addFinishCallback(cb);
     startWidth->addCallback(cb);
     endWidth->addCallback(cb);
@@ -18,9 +18,10 @@ void LWVertexGroup::setMainWindow(lc::ui::MainWindow* mainWindowIn) {
     coordgui->enableCoordinateSelection(mainWindowIn);
 }
 
-void LWVertexGroup::getLuaValue(kaguya::LuaRef& table) {
+void LWVertexGroup::getLuaValue(sol::table & table) {
     HorizontalGroupGUI::getLuaValue(table);
-    table[_key] = kaguya::NewTable();
+    sol::state_view luaVM = table.lua_state();
+    table[_key] = luaVM.create_table();
 
     table[_key][_key + "_Location"] = table[_key + "_Location"];
     table[_key][_key + "_StartWidth"] = table[_key + "_StartWidth"];

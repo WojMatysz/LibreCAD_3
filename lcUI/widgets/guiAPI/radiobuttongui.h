@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QRadioButton>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc {
 namespace ui {
@@ -40,13 +40,13 @@ public:
     * \brief Add callback on state changed
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(sol::function cb);
 
     /**
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table);
+    void getLuaValue(sol::table & table);
 
     /**
     * \brief Set gui key for the lua table
@@ -74,7 +74,7 @@ public slots:
 
 private:
     std::string _label;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<sol::function> _callbacks;
     std::string _key;
 };
 }

@@ -49,13 +49,13 @@ public:
     * \brief Add callback for editingFinished
     * \param LuaRef lua callback
     */
-    void addFinishCallback(kaguya::LuaRef cb);
+    void addFinishCallback(sol::function cb);
 
     /**
     * \brief Add callback for textChanged
     * \param LuaRef lua callback
     */
-    void addOnChangeCallback(kaguya::LuaRef cb);
+    void addOnChangeCallback(sol::function cb);
 
     /**
     * \brief Overridden Angle Text GUI widget label
@@ -79,7 +79,7 @@ public:
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getLuaValue(sol::table & table) override;
 
     /**
     * \brief Hide widget label
@@ -125,8 +125,8 @@ private:
     QLabel* _textLabel;
     QPushButton* _angleTypeButton;
     QLineEdit* _lineEdit;
-    std::vector<kaguya::LuaRef> _callbacks_finished;
-    std::vector<kaguya::LuaRef> _callbacks_onchange;
+    std::vector<sol::function> _callbacks_finished;
+    std::vector<sol::function> _callbacks_onchange;
 };
 
 }

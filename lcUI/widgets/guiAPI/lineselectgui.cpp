@@ -30,7 +30,7 @@ void LineSelectGUI::metaInfoManagerChanged() {
     }
 }
 
-void LineSelectGUI::addCallback(kaguya::LuaRef cb) {
+void LineSelectGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
@@ -51,7 +51,7 @@ void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
     _linePatternSelect.setLinePattern(linePatternInfo);
 }
 
-void LineSelectGUI::getLuaValue(kaguya::LuaRef& table) {
+void LineSelectGUI::getLuaValue(sol::table & table) {
 }
 
 void LineSelectGUI::hideLabel() {

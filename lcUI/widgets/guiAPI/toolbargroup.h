@@ -2,7 +2,7 @@
 
 #include <QGroupBox>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 #include "toolbarbutton.h"
 
 namespace lc
@@ -47,7 +47,7 @@ public:
     * \param LuaRef button callback
     * \return pointer to toolbar button
     */
-    ToolbarButton* addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback);
+    ToolbarButton* addButton(const char* buttonName, const char* buttonIcon, sol::function callback);
 
     /**
     * \brief Add non button widget to group

@@ -35,13 +35,13 @@ void ComboBoxGUI::setLabel(const std::string& newLabel) {
     _textLabel->setText(QString(newLabel.c_str()));
 }
 
-void ComboBoxGUI::addCallback(kaguya::LuaRef cb) {
+void ComboBoxGUI::addCallback(sol::function cb) {
     _activatedCallbacks.push_back(cb);
 }
 
 void ComboBoxGUI::activatedCallbacks(int index) {
-    for (kaguya::LuaRef& cb : _activatedCallbacks) {
-        cb(_comboBox->currentText().toStdString());
+    for (const auto & callback : _activatedCallbacks) {
+        callback(_comboBox->currentText().toStdString());
     }
 }
 
@@ -69,7 +69,7 @@ void ComboBoxGUI::setValue(int index) {
     _comboBox->setCurrentIndex(index);
 }
 
-void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
+void ComboBoxGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

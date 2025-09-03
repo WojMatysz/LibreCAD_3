@@ -5,7 +5,8 @@
 #include <QVBoxLayout>
 #include <set>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
+
 #include "inputguicontainer.h"
 #include "inputgui.h"
 #include "buttongui.h"

@@ -28,13 +28,13 @@ NumberGUI::~NumberGUI()
     delete ui;
 }
 
-void NumberGUI::addCallback(kaguya::LuaRef cb) {
+void NumberGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
 void NumberGUI::valueChangedCallbacks(double val) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(val);
+    for (const auto & callback : _callbacks) {
+        callback(val);
     }
 }
 
@@ -51,7 +51,7 @@ void NumberGUI::setValue(double val) {
     _spinBox->setValue(val);
 }
 
-void NumberGUI::getLuaValue(kaguya::LuaRef& table) {
+void NumberGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

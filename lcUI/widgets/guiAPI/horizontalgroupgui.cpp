@@ -55,7 +55,7 @@ void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
     qboxlayout->addWidget(newWidget);
 }
 
-void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
+void HorizontalGroupGUI::getLuaValue(sol::table & table) {
     for (QWidget* inputWidget : _widgets) {
         InputGUI* inpgui = qobject_cast<InputGUI*>(inputWidget);
         if (inpgui != nullptr) {

@@ -23,17 +23,17 @@ void CheckBoxGUI::setLabel(const std::string& newLabel) {
     _checkBox->setText(QString(newLabel.c_str()));
 }
 
-void CheckBoxGUI::addCallback(kaguya::LuaRef cb) {
+void CheckBoxGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
 void CheckBoxGUI::callbackCalled(int state) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(state == Qt::Checked);
+    for (const auto & callback : _callbacks) {
+        callback(state == Qt::Checked);
     }
 }
 
-void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
+void CheckBoxGUI::getLuaValue(sol::table & table) {
     table[_key] = _checkBox->isChecked();
 }
 

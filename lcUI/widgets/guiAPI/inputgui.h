@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QContextMenuEvent>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 #include <string>
 #include <vector>
@@ -47,7 +47,7 @@ public:
     * \brief add key and value to the lua table
     * \param LuaRef lua table
     */
-    virtual void getLuaValue(kaguya::LuaRef& table) = 0;
+    virtual void getLuaValue(sol::table & table) = 0;
 
     /**
     * \brief Hide label of the input gui

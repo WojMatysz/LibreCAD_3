@@ -71,19 +71,19 @@ QString CoordinateGUI::generateTooltip() const {
     return tooltipcoord + "\n" + tooltipmagnitude + "\n" + tooltipangle;
 }
 
-void CoordinateGUI::addFinishCallback(kaguya::LuaRef cb) {
+void CoordinateGUI::addFinishCallback(sol::function cb) {
     _callbacks_finished.push_back(cb);
 }
 
-void CoordinateGUI::addOnChangeCallback(kaguya::LuaRef cb) {
+void CoordinateGUI::addOnChangeCallback(sol::function cb) {
     _callbacks_onchange.push_back(cb);
 }
 
 void CoordinateGUI::editingFinishedCallbacks() {
     updateCoordinate();
 
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb(_coordinate);
+    for (const auto & callback : _callbacks_finished) {
+        callback(_coordinate);
     }
 }
 
@@ -91,8 +91,8 @@ void CoordinateGUI::textChangedCallbacks() {
     updateCoordinate();
     updateCoordinateDisplay();
 
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(_coordinate);
+    for (const auto & callback : _callbacks_onchange) {
+        callback(_coordinate);
     }
 }
 
@@ -113,7 +113,7 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
     _xcoordEdit->blockSignals(false);
 }
 
-void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
+void CoordinateGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

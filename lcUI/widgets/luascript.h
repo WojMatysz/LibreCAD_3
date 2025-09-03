@@ -10,6 +10,7 @@
 #include "clicommand.h"
 
 #include <lclua.h>
+#include "sol.hpp"
 
 namespace Ui {
 class LuaScript;
@@ -56,14 +57,14 @@ private:
     /**
      * \brief Register helper global functions
      */
-    void registerGlobalFunctions(kaguya::State& luaState);
+    void registerGlobalFunctions(sol::state & luaVM);
 
 private:
     Ui::LuaScript* ui;
     lc::ui::MainWindow* _mainWindow;
     CadMdiChild* _mdiChild;
     CliCommand* _cliCommand;
-    kaguya::State luaState;
+    sol::state m_luaVM;
 };
 }
 }

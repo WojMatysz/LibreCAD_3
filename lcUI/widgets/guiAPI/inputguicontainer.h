@@ -48,13 +48,13 @@ public:
     * \brief Add lua callback for dialog finish
     * \return LuaRef callback
     */
-    void addFinishCallback(kaguya::LuaRef cb);
+    void addFinishCallback(sol::function cb);
 
     /**
     * \brief Generate table containing info of all widgets in inputguicontainer
     * \return LuaRef info table
     */
-    kaguya::LuaRef generateInfo(lua_State* luastate);
+    sol::table generateInfo(sol::state_view luaVM);
 
     /**
     * \brief Return list of all keys
@@ -72,7 +72,7 @@ public:
 protected:
     std::map<std::string, InputGUI*> _inputWidgets;
     std::map<std::string, std::string> _widgetToGroup;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<sol::function> _callbacks;
     std::set<std::string> _addedKeys;
     lc::ui::MainWindow* mainWindow;
     std::string _label;

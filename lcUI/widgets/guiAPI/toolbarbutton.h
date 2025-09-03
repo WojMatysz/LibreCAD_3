@@ -3,7 +3,7 @@
 #include <QPushButton>
 #include <unordered_map>
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc
 {
@@ -25,7 +25,7 @@ public:
     * \param string icon path
     * \param LuaRef callback
     */
-    ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip = "", bool _checkable=false, QWidget* parent = nullptr);
+    ToolbarButton(const char* buttonLabel, const char* icon, sol::function callback, const char* tooltip = "", bool _checkable=false, QWidget* parent = nullptr);
 
     /**
     * \brief ToolbarButton Constructor
@@ -56,13 +56,13 @@ public:
     * \brief Add another lua callback
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef callback);
+    void addCallback(sol::function callback);
 
     /**
     * \brief Add another lua callback
     * \param LuaRef callback
     */
-    void addCallback(const char* cb_name, kaguya::LuaRef callback);
+    void addCallback(const char* cb_name, sol::function callback);
 
     /**
     * \brief remove
@@ -91,9 +91,9 @@ public:
     * \param int index
     * \return LuaRef& callback
     */
-    kaguya::LuaRef& getCallback(int index);
+    sol::function & getCallback(int index);
 
-    ToolbarButton* clone();
+    ToolbarButton * clone();
 
 signals:
     /**
@@ -110,7 +110,7 @@ public slots:
 
 private:
     std::string _label;
-    std::vector<kaguya::LuaRef> callbacks;
+    std::vector<sol::function> callbacks;
     std::unordered_map<std::string, int> namedCallbacks;
     bool _checkable;
 };

@@ -12,12 +12,12 @@ LuaScript::LuaScript(lc::ui::MainWindow* mainWindow) :
     _cliCommand(mainWindow->cliCommand()) {
     ui->setupUi(this);
 
-    auto lcLua = lc::lua::LCLua(luaState);
+    auto lcLua = lc::lua::LCLua(m_luaVM);
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
-    luaOpenGUIBridge(luaState.state());
-    registerGlobalFunctions(luaState);
+    luaOpenGUIBridge(m_luaVM);
+    registerGlobalFunctions(m_luaVM);
 }
 
 LuaScript::~LuaScript() {
@@ -26,7 +26,7 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    auto lcLua = lc::lua::LCLua(luaState);
+    auto lcLua = lc::lua::LCLua(m_luaVM);
     lcLua.setDocument(_mdiChild->document());
 
     auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
@@ -73,14 +73,15 @@ void LuaScript::on_save_clicked() {
     }
 }
 
-void LuaScript::registerGlobalFunctions(kaguya::State& luaState) {
+void LuaScript::registerGlobalFunctions(sol::state & luaVM) 
+{
     // register common functions i.e. run_basic_operation and message
-    luaState["mainWindow"] = static_cast<lc::ui::MainWindow*>(_mainWindow);
-    luaState.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    luaVM["mainWindow"] = static_cast<lc::ui::MainWindow*>(_mainWindow);
+    luaVM.script("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
 
     // cli command helper functions
-    luaState.dostring("message = function(m) mainWindow:cliCommand():write(m) end");
-    luaState.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
-    luaState.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
-    luaState.dostring("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
+    luaVM.script("message = function(m) mainWindow:cliCommand():write(m) end");
+    luaVM.script("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
+    luaVM.script("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
+    luaVM.script("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
 }

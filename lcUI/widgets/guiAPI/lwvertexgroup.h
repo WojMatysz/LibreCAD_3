@@ -30,7 +30,7 @@ public:
     * \brief Add lua callback
     * \param LuaRef callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(sol::function cb);
 
     /**
     * \brief Set main window i.e. enable coordinate selection
@@ -42,7 +42,7 @@ public:
     * \brief Store the value in the lua table
     * \param LuaRef to table
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getLuaValue(sol::table & table) override;
 
     /**
     * \brief Set the vertex group key

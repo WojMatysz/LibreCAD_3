@@ -43,27 +43,27 @@ void TextGUI::setValue (const std::string& newText) {
     _lineEdit->setText(QString(newText.c_str()));
 }
 
-void TextGUI::addFinishCallback(kaguya::LuaRef cb) {
+void TextGUI::addFinishCallback(sol::function cb) {
     _callbacks_finished.push_back(cb);
 }
 
-void TextGUI::addOnChangeCallback(kaguya::LuaRef cb) {
+void TextGUI::addOnChangeCallback(sol::function cb) {
     _callbacks_onchange.push_back(cb);
 }
 
 void TextGUI::editingFinishedCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb();
+    for (const auto & callback : _callbacks_finished) {
+        callback();
     }
 }
 
 void TextGUI::textChangedCallbacks(const QString& changedText) {
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(changedText.toStdString());
+    for (const auto & callback : _callbacks_onchange) {
+        callback(changedText.toStdString());
     }
 }
 
-void TextGUI::getLuaValue(kaguya::LuaRef& table) {
+void TextGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

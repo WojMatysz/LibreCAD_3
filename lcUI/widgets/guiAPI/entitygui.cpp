@@ -33,7 +33,7 @@ EntityGUI::~EntityGUI()
     delete ui;
 }
 
-void EntityGUI::getLuaValue(kaguya::LuaRef& table) {
+void EntityGUI::getLuaValue(sol::table & table) {
     if (_selectedEntitiesList.size() == 1) {
         table[_key] = _selectedEntitiesList[0];
     }
@@ -117,7 +117,7 @@ void EntityGUI::setValue(std::vector<lc::entity::CADEntity_CSPtr> newSelectedEnt
     }
 }
 
-void EntityGUI::addCallback(kaguya::LuaRef cb) {
+void EntityGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
@@ -125,8 +125,8 @@ void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* 
     int index = current->data(Qt::UserRole).toInt();
     entityItemSelected(_selectedEntitiesList[index]);
 
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(_selectedEntitiesList[index]);
+    for (const auto & callback : _callbacks) {
+        callback(_selectedEntitiesList[index]);
     }
 }
 

@@ -25,7 +25,7 @@ void RadioGroupGUI::addButton(const std::string& key, RadioButtonGUI* newWidget)
     _addedKeys.insert(key);
 }
 
-void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
+void RadioGroupGUI::getLuaValue(sol::table & table) {
     RadioButtonGUI* checkButton = qobject_cast<RadioButtonGUI*>(qbuttongroup->checkedButton());
     if (checkButton != nullptr) {
         table[_key] = checkButton->label();

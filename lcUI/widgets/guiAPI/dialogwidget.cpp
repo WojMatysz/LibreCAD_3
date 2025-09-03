@@ -55,8 +55,9 @@ void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
 }
 
 void DialogWidget::finishCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        kaguya::LuaRef result = generateInfo(cb.state());
-        cb(result);
+    for (const auto & callback : _callbacks) {
+        sol::state_view luaVM(callback.lua_state());
+        sol::table result = generateInfo(luaVM);
+        callback(result);
     }
 }

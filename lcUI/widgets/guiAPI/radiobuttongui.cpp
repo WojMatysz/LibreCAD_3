@@ -19,17 +19,17 @@ void RadioButtonGUI::setLabel(const std::string& newLabel) {
     this->setText(QString(newLabel.c_str()));
 }
 
-void RadioButtonGUI::addCallback(kaguya::LuaRef cb) {
+void RadioButtonGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
 void RadioButtonGUI::callbackCalled(bool toggled) {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(toggled);
+    for (const auto & callback : _callbacks) {
+        callback(toggled);
     }
 }
 
-void RadioButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+void RadioButtonGUI::getLuaValue(sol::table & table) {
     table[_key] = isChecked();
 }
 

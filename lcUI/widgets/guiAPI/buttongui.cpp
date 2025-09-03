@@ -20,17 +20,17 @@ void ButtonGUI::setLabel(const std::string& newLabel) {
     _pushButton->setText(QString(newLabel.c_str()));
 }
 
-void ButtonGUI::addCallback(kaguya::LuaRef cb) {
+void ButtonGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
 void ButtonGUI::callbackCalled() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb();
+    for (const auto & callback : _callbacks) {
+        callback();
     }
 }
 
-void ButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+void ButtonGUI::getLuaValue(sol::table & table) {
 }
 
 void ButtonGUI::click() {

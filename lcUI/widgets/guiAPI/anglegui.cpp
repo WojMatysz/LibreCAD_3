@@ -85,8 +85,8 @@ void AngleGUI::editingFinishedCallbacks() {
         angleInRad = _lineEdit->text().toDouble();
     }
 
-    for (kaguya::LuaRef& cb : _callbacks_finished) {
-        cb(angleInRad);
+    for (const auto & callback : _callbacks_finished) {
+        callback(angleInRad);
     }
 }
 
@@ -100,16 +100,16 @@ void AngleGUI::textChangedCallbacks(const QString& changedText) {
         angleInRad = changedText.toDouble();
     }
 
-    for (kaguya::LuaRef& cb : _callbacks_onchange) {
-        cb(angleInRad);
+    for (const auto & callback : _callbacks_onchange) {
+        callback(angleInRad);
     }
 }
 
-void AngleGUI::addFinishCallback(kaguya::LuaRef cb) {
+void AngleGUI::addFinishCallback(sol::function cb) {
     _callbacks_finished.push_back(cb);
 }
 
-void AngleGUI::addOnChangeCallback(kaguya::LuaRef cb) {
+void AngleGUI::addOnChangeCallback(sol::function cb) {
     _callbacks_onchange.push_back(cb);
 }
 
@@ -142,7 +142,7 @@ void AngleGUI::setValue(double val) {
     _lineEdit->setText(QString::number(angle));
 }
 
-void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
+void AngleGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

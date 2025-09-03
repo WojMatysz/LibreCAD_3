@@ -30,7 +30,7 @@ ColorGUI::~ColorGUI() {
     delete ui;
 }
 
-void ColorGUI::getLuaValue(kaguya::LuaRef& table) {
+void ColorGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 
@@ -71,13 +71,13 @@ void ColorGUI::setValue(lc::Color col) {
     colorSelectedCallbacks();
 }
 
-void ColorGUI::addCallback(kaguya::LuaRef cb) {
+void ColorGUI::addCallback(sol::function cb) {
     _callbacks.push_back(cb);
 }
 
 void ColorGUI::colorSelectedCallbacks() {
-    for (kaguya::LuaRef& cb : _callbacks) {
-        cb(value());
+    for (const auto & callback : _callbacks) {
+        callback(value());
     }
 }
 

@@ -5,7 +5,7 @@
 
 #include "inputgui.h"
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace lc {
 namespace ui {
@@ -36,13 +36,13 @@ public:
     * \brief Add callback on state changed
     * \param LuaRef lua callback
     */
-    void addCallback(kaguya::LuaRef cb);
+    void addCallback(sol::function cb);
 
     /**
     * \brief Return lua value
     * \param LuaRef value
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getLuaValue(sol::table& table) override;
 
     /**
     * \brief Get value
@@ -77,7 +77,7 @@ protected:
     void pasteValue(QDataStream& stream) override;
 
 private:
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<sol::function> _callbacks;
     QCheckBox* _checkBox;
 };
 }

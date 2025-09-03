@@ -98,25 +98,25 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
 void Toolbar::addSnapOptions() {
     // Add toolbar snap options
     lc::ui::api::ToolbarTab* quickAccessTab = tabByName("Quick Access");
-    kaguya::State state(luaInterface->luaState());
+    sol::state & luaVM = luaInterface->luaVM();
 
     quickAccessTab->addGroup(new lc::ui::api::ToolbarGroup("Snap Options", 2));
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end");
-    addButton("SnapGrid", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
+    luaVM.script("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end");
+    addButton("SnapGrid", ":/icons/snap_grid.svg", "Snap Options", luaVM["snap_op"], "Snap Grid", true);
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
-    addButton("SnapIntersection", ":/icons/snap_intersection.svg", "Snap Options", state["snap_op"], "Snap Intersection", true);
+    luaVM.script("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
+    addButton("SnapIntersection", ":/icons/snap_intersection.svg", "Snap Options", luaVM["snap_op"], "Snap Intersection", true);
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
-    addButton("SnapMiddle", ":/icons/snap_middle.svg", "Snap Options", state["snap_op"], "Snap Middle", true);
+    luaVM.script("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
+    addButton("SnapMiddle", ":/icons/snap_middle.svg", "Snap Options", luaVM["snap_op"], "Snap Middle", true);
 
-    state.dostring("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
-    addButton("SnapEntity", ":/icons/snap_entity.svg", "Snap Options", state["snap_op"], "Snap Entity", true);
+    luaVM.script("snap_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
+    addButton("SnapEntity", ":/icons/snap_entity.svg", "Snap Options", luaVM["snap_op"], "Snap Entity", true);
 
-    state["snap_op"] = nullptr;
+    luaVM["snap_op"] = nullptr;
 }
 
-void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip, bool checkable, const char* tabName)
+void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, sol::function cb, const char* tooltip, bool checkable, const char* tabName)
 {
     if (_tabs.find(tabName) == _tabs.end()) {
         addTab(tabName);

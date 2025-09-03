@@ -4,7 +4,7 @@
 
 using namespace lc::ui::api;
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, bool _checkable, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, sol::function callback, const char* tooltip, bool _checkable, QWidget* parent)
     :
     ToolbarButton(buttonLabel, icon, tooltip, _checkable, parent)
 {
@@ -52,7 +52,7 @@ void ToolbarButton::setTooltip(const char* newToolTip) {
     this->setToolTip(newToolTip);
 }
 
-void ToolbarButton::addCallback(kaguya::LuaRef callback) {
+void ToolbarButton::addCallback(sol::function callback) {
     callbacks.push_back(callback);
 }
 
@@ -71,11 +71,11 @@ bool ToolbarButton::checkable() const {
     return _checkable;
 }
 
-kaguya::LuaRef& ToolbarButton::getCallback(int index) {
+sol::function & ToolbarButton::getCallback(int index) {
     return callbacks[index];
 }
 
-void ToolbarButton::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+void ToolbarButton::addCallback(const char* cb_name, sol::function callback) {
     namedCallbacks[cb_name] = callbacks.size();
     addCallback(callback);
 }
@@ -101,8 +101,8 @@ ToolbarButton* ToolbarButton::clone() {
     ToolbarButton* clonedButton = new ToolbarButton(_label.c_str(), "", this->toolTip().toStdString().c_str(), _checkable);
     clonedButton->setIcon(this->icon());
 
-    for (kaguya::LuaRef luaRef : callbacks) {
-        clonedButton->addCallback(luaRef);
+    for (const auto & callback : callbacks) {
+        clonedButton->addCallback(callback);
     }
 
     for (auto namedCb : namedCallbacks) {

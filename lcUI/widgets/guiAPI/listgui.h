@@ -49,7 +49,7 @@ public:
     * \brief Get lua value
     * \param LuaRef table
     */
-    void getLuaValue(kaguya::LuaRef& table) override;
+    void getLuaValue(sol::table & table) override;
 
     /**
     * \brief Add list item to list
@@ -86,7 +86,7 @@ public:
     * \brief Set callback for all items in the list
     * \param LuaRef lua callback
     */
-    void addCallbackToAll(kaguya::LuaRef cb);
+    void addCallbackToAll(sol::function cb);
 
     /**
     * \brief Add given coordinates as list items
@@ -151,7 +151,7 @@ private:
     std::set<std::string> _addedKeys;
     lc::ui::MainWindow* mainWindow;
     ListType _listType;
-    std::vector<kaguya::LuaRef> _callbacks;
+    std::vector<sol::function> _callbacks;
     unsigned int itemIdCount;
     lc::entity::CADEntity_CSPtr _selectedCoordinate;
 };

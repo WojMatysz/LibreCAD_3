@@ -33,13 +33,13 @@ void SliderGUI::setLabel(const std::string& newLabel) {
     _textLabel->setText(QString(newLabel.c_str()));
 }
 
-void SliderGUI::addCallback(kaguya::LuaRef cb) {
+void SliderGUI::addCallback(sol::function cb) {
     _valueChangeCallbacks.push_back(cb);
 }
 
 void SliderGUI::valueChangedCallbacks(int value) {
-    for (kaguya::LuaRef& cb : _valueChangeCallbacks) {
-        cb(value);
+    for (const auto & callback : _valueChangeCallbacks) {
+        callback(value);
     }
 }
 
@@ -55,7 +55,7 @@ void SliderGUI::setValue(int val) {
     _slider->setValue(val);
 }
 
-void SliderGUI::getLuaValue(kaguya::LuaRef& table) {
+void SliderGUI::getLuaValue(sol::table & table) {
     table[_key] = value();
 }
 

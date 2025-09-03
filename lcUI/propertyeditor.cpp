@@ -26,9 +26,7 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     InputGUIContainer("property_editor", mainWindow)
 {
     QScrollArea* parentWidget = new QScrollArea(this);
-
-    parentWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    parentWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+parentWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); parentWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     parentWidget->setWidgetResizable(true);
 
     QTreeWidget* widget = new QTreeWidget(parentWidget);
@@ -233,9 +231,9 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
                 std::string propertyType = propertyName.substr(lastUnderscore + 1);
 
                 if (propertyType == "Location") loc = property.second.as<lc::geo::Coordinate>();
-                if (propertyType == "StartWidth") sWidth = property.second.as<double>();
-                if (propertyType == "EndWidth") eWidth = property.second.as<double>();
-                if (propertyType == "Bulge") bulge = property.second.as<double>();
+                else if (propertyType == "StartWidth") sWidth = property.second.as<double>();
+                else if (propertyType == "EndWidth") eWidth = property.second.as<double>();
+                else if (propertyType == "Bulge") bulge = property.second.as<double>();
             }
 
             builderVertices.emplace_back(loc, sWidth, eWidth, bulge, 0);
