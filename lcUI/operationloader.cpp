@@ -159,33 +159,41 @@ void OperationLoader::initializeOperation(const std::string& vkey)
     addContextMenuOperations(vkey);
 }
 
-
-void OperationLoader::addOperationCommandLine(const std::string& vkey, const std::string& opkey) {
+void OperationLoader::addOperationCommandLine(const std::string & globalKey, const std::string & operationKey) 
+{
     widgets::CliCommand* cliCommand = static_cast<MainWindow*>(qmainWindow)->cliCommand();
 
-    if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
-        _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-        cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+    auto createRunOp = [&](const std::string & globalKey, const std::string & init = "")
+    {
+        if (init.empty()) _L["run_op"] = _L.script("function() run_basic_operation(" + globalKey + ") end");
+        else _L["run_op"] = _L.script("function() run_basic_operation(" + globalKey + ", '_init_" + init + "') end");
+    };
+
+    sol::object operation = _L[globalKey][operationKey];
+    if (operation.is<std::string>())
+    {
+        createRunOp(globalKey);
+        cliCommand->addCommand(operation.as<std::string>().c_str(), _L["run_op"]);
     }
 
-    if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_TABLE) {
-        std::vector<kaguya::LuaRef> commandList = _L[vkey][opkey].keys();
-
-        for (kaguya::LuaRef commandKey : commandList) {
-            std::string key = commandKey.get<std::string>();
+    if (operation.is<sol::table>()) 
+    {
+        sol::table operationTable = operation.as<sol::table>();
+        for (const auto & pair : operationTable)
+        {
+            std::string key = pair.first.as<std::string>();
+            std::string command = pair.second.as<std::string>();
 
             // if key is digits only i.e. if no key provided, connect it to default init
-            if (std::find_if(key.begin(), key.end(), [](unsigned char c) {
-            return !std::isdigit(c);
-            }) == key.end())
+            if (std::find_if(key.begin(), key.end(), [](unsigned char c) { return !std::isdigit(c); }) == key.end())
             {
                 // connect to default init function
-                _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>().c_str(), _L["run_op"]);
+                createRunOp(globalKey);
+                cliCommand->addCommand(command.c_str(), _L["run_op"]);
             }
             else {
                 // connect to provided init function
-                _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
+                createRunOp(globalKey, command);
                 cliCommand->addCommand(key.c_str(), _L["run_op"]);
             }
         }
@@ -198,12 +206,8 @@ void OperationLoader::addOperationMenuAction(const std::string& vkey, const std:
 
     for (auto element : map)
     {
-        if (element.first == "default") {
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-        }
-        else {
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
-        }
+        if (element.first == "default") _L.script("run_op = function() run_basic_operation(" + vkey + ") end");
+        else _L.script("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
         mWindow->connectMenuItem(element.second, _L["run_op"]);
     }
 }
@@ -222,49 +226,80 @@ void OperationLoader::addOperationIcon(const std::string& vkey, const std::strin
     }
 
     std::string iconPath = ":/icons/" + icon;
-    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+    _L.script("run_op = function() run_basic_operation(" + vkey + ") end");
 
     toolbar->addButton(vkey.c_str(), iconPath.c_str(), groupNames[vkey].c_str(), _L["run_op"], tooltip.c_str());
 }
 
-void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey) {
+
+void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey) 
+{
     MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
-    std::map<std::string, kaguya::LuaRef> options = _L[vkey][opkey];
+    sol::table options = _L[vkey][opkey];
 
-    std::vector<kaguya::LuaRef> optionsList;
-    for (auto element : options) {
+    std::vector<sol::function> optionsList;
+    for (const auto & element : options) 
+    {
+        std::string key = element.first.as<std::string>();
+        sol::object value = element.second;
+
         // operation_options for init_method
-        if (element.first.find("_init") < element.first.size()) {
-            std::map<std::string, kaguya::LuaRef> optionsInit = element.second;
+        if (key.find("_init") != std::string::npos) 
+        {
+            sol::table optionsInit = value.as<sol::table>();
 
-            std::vector<kaguya::LuaRef> optionsInitList;
-            for (auto elementInit : optionsInit) {
-                std::map<std::string, std::string> optionInit = elementInit.second;
+            std::vector<sol::function> optionsInitList;
+            for (const auto & elementInit : optionsInit) 
+            {
+                std::string initKey = elementInit.first.as<std::string>();
+                sol::table optionInit = elementInit.second.as<sol::table>();
 
-                std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
-                _L.dostring(action);
+                std::string icon   = optionInit["icon"].get<std::string>();
+                std::string action = optionInit["action"].get<std::string>();
+
+                std::string luaAction =
+                    "operation_op = function() "
+                    "mainWindow:toolbar():addButton('cancel', ':/icons/" + icon +
+                    "', 'Current operation', function() luaInterface:operation():" + action +
+                    "() end, '" + initKey + "') "
+                    "end";
+
+                _L.script(luaAction);
                 optionsInitList.push_back(_L["operation_op"]);
             }
 
             // LINEOPERATIONS_init_pal - example key for operation options list
-            mWindow->addOperationOptions(_L[vkey]["command_line"].get<std::string>() + element.first, optionsInitList);
+            std::string commandLine = _L[vkey]["command_line"].get<std::string>();
+            mWindow->addOperationOptions(commandLine + key, optionsInitList);
         }
-        else
+        else 
         {
             // default operation_options
-            std::map<std::string, std::string> option = element.second;
+            sol::table option = value.as<sol::table>();
 
-            std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
-            _L.dostring(action);
+            std::string icon   = option["icon"].get<std::string>();
+            std::string action = option["action"].get<std::string>();
+
+            std::string luaAction =
+                "operation_op = function() "
+                "mainWindow:toolbar():addButton('cancel', ':/icons/" + icon +
+                "', 'Current operation', function() luaInterface:operation():" + action +
+                "() end, '" + key + "') "
+                "end";
+
+            _L.script(luaAction);
             optionsList.push_back(_L["operation_op"]);
         }
     }
 
     // provide options list to mainWindow so it can run necessary function on runOperation
-    if (optionsList.size() > 0) {
-        mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+    if (!optionsList.empty()) 
+    {
+        std::string commandLine = _L[vkey]["command_line"].get<std::string>();
+        mWindow->addOperationOptions(commandLine, optionsList);
     }
-    _L["operation_op"] = nullptr;
+
+    _L["operation_op"] = sol::nil;
 }
 
 void OperationLoader::addContextMenuOperations(const std::string& vkey) {
@@ -273,19 +308,22 @@ void OperationLoader::addContextMenuOperations(const std::string& vkey) {
     contextMenuManager->addOperation(vkey, groupNames[vkey]);
 }
 
-void OperationLoader::addContextTransitions(const std::string& vkey, const std::string& opkey) {
+void OperationLoader::addContextTransitions(const std::string& vkey, const std::string& opkey) 
+{
     MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
     lc::ui::ContextMenuManager* contextMenuManager = ContextMenuManager::GetContextMenuManager(mWindow->contextMenuManagerId());
-    std::map<std::string, kaguya::LuaRef> functionNames = _L[vkey][opkey];
+    sol::table functionNames = _L[vkey][opkey];
 
-    for (auto fName : functionNames) {
-        std::vector<kaguya::LuaRef> transitionList = _L[vkey][opkey][fName.first];
-        std::vector<std::string> transList;
+    for (const auto & element : functionNames) 
+    {
+        sol::table transitionTable = element.second;
+        std::vector<std::string> transitionList;
 
-        for (kaguya::LuaRef transitionFunc : transitionList) {
-            transList.push_back(transitionFunc.get<std::string>());
+        for (const auto & transitionFunction : transitionTable) 
+        {
+            transitionList.push_back(transitionFunction.second.as<std::string>());
         }
 
-        contextMenuManager->addTransition(_L[vkey]["name"], fName.first, transList);
+        contextMenuManager->addTransition(_L[vkey]["name"].get<std::string>(), element.first.as<std::string>(), transitionList);
     }
 }
