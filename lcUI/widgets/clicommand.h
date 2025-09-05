@@ -12,7 +12,7 @@
 
 #include "widgettitlebar.h"
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
 namespace Ui {
 class CliCommand;
@@ -41,7 +41,7 @@ public:
     /**
      * \brief Add a new command
      */
-    bool addCommand(const char* name, kaguya::LuaRef cb);
+    bool addCommand(const char* name, sol::function cb);
 
     /**
      * \brief Write a message in the logs
@@ -157,7 +157,7 @@ private:
     int _historySize;
     int _historyIndex;
 
-    QMap<QString, kaguya::LuaRef> _commands_cb;
+    QMap<QString, sol::function> _commands_cb;
     QMap<QString, bool> _commands_enabled;
     std::vector<std::string> _commands_entered;
 };

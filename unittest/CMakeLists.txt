@@ -31,6 +31,9 @@ include_directories(${GTest_INCLUDE_DIRS})
 link_directories(${GTest_LIBRARY_DIRS})
 include_directories(${GLEW_INCLUDE_DIR})
 
+# SOL2
+include_directories(${SOL2})
+
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})

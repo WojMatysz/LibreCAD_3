@@ -89,9 +89,9 @@ TextDialog::~TextDialog()
 }
 
 void TextDialog::okButtonClicked() {
-    kaguya::State state(_mainWindow->luaInterface()->luaState());
-    _mainWindow->runOperation(state["MTextOperations"]);
-    state.dostring("updateTextOp = function(textEntity) mainWindow:currentOperation():copyEntity(textEntity) end");
+    sol::state & luaVM(_mainWindow->luaInterface()->luaVM());
+    _mainWindow->runOperation(luaVM["MTextOperations"]);
+    luaVM.script("updateTextOp = function(textEntity) mainWindow:currentOperation():copyEntity(textEntity) end");
     lc::builder::MTextBuilder textBuilder;
     textBuilder.setLayer(_mainWindow->cadMdiChild()->activeLayer());
     textBuilder.setMetaInfo(_mainWindow->cadMdiChild()->metaInfoManager()->metaInfo());
@@ -109,7 +109,7 @@ void TextDialog::okButtonClicked() {
     textBuilder.setBold(boldCheckbox->isChecked());
     textBuilder.setItalic(italicCheckbox->isChecked());
 
-    state["updateTextOp"](textBuilder.build());
+    luaVM["updateTextOp"](textBuilder.build());
 
     this->close();
 }

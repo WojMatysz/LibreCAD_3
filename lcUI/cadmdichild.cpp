@@ -191,7 +191,7 @@ std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
     return _viewerProxy->cursor();
 }
 
-void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {
+void CadMdiChild::setDestroyCallback(sol::function destroyCallback) {
     _destroyCallback = std::move(destroyCallback);
 }
 

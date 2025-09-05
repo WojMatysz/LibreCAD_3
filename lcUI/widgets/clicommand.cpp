@@ -41,7 +41,7 @@ CliCommand::~CliCommand() {
     delete ui;
 }
 
-bool CliCommand::addCommand(const char* name, kaguya::LuaRef cb) {
+bool CliCommand::addCommand(const char* name, sol::function cb) {
     if(_commands->stringList().indexOf(name) == -1) {
         auto newList = _commands->stringList();
         newList << QString(name);
@@ -238,7 +238,7 @@ void CliCommand::runCommand(const char* command)
         return;
     }
     _commands_entered.push_back(command);
-    kaguya::LuaRef& cb = _commands_cb[command];
+    sol::function & cb = _commands_cb[command];
     cb();
 }
 

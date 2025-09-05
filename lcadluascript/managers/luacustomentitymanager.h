@@ -1,7 +1,6 @@
 #pragma once
 
 #include <lclua.h>
-//#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace lua {

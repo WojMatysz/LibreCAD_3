@@ -1,15 +1,8 @@
 #pragma once
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
 
-#include <kaguya/kaguya.hpp>
+#include "sol.hpp"
 
+void luaOpenGUIBridge(sol::state & luaVM);
 
-void luaOpenGUIBridge(lua_State *L);
-
-void addLCBindings(lua_State *L);
-void addLuaGUIAPIBindings(lua_State* L);
+void addLCBindings(sol::state & luaVM);
+void addLuaGUIAPIBindings(sol::state & luaVM);

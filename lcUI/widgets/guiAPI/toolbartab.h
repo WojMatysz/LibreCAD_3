@@ -10,8 +10,6 @@
 #include "toolbarbutton.h"
 #include "toolbargroup.h"
 
-#include <kaguya/kaguya.hpp>
-
 namespace Ui {
 class ToolbarTab;
 }

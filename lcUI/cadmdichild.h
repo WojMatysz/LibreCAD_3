@@ -13,14 +13,8 @@
 #include <file.h>
 #include <managers/metainfomanager.h>
 
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include "sol.hpp"
 
-#include <kaguya/kaguya.hpp>
 
 namespace lc {
 namespace ui {
@@ -48,7 +42,7 @@ public:
      * \brief Give function to call when window is destroyed
      * \param callback Lua function
      */
-    void setDestroyCallback(kaguya::LuaRef destroyCallback);
+    void setDestroyCallback(sol::function destroyCallback);
 
     void keyPressEvent(QKeyEvent* event);
     lc::meta::Block_CSPtr activeViewport() const {
@@ -131,7 +125,7 @@ private:
     std::string _filename;
     lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
-    kaguya::LuaRef _destroyCallback;
+    sol::function _destroyCallback;
 
     std::shared_ptr<lc::storage::Document> _document;
 

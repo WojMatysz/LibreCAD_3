@@ -2,10 +2,11 @@
 
 #include <QMenu>
 #include <cad/base/cadentity.h>
-#include <kaguya/kaguya.hpp>
 
 #include "mainwindow.h"
 #include "widgets/guiAPI/menu.h"
+
+#include "sol.hpp"
 
 namespace lc
 {
@@ -92,7 +93,7 @@ private:
 private:
     static std::map<lc::ui::MainWindow*, int> instancesId;
     static std::map<int, ContextMenuManager*> instances;
-    kaguya::State _L;
+    sol::state & _L;
     std::map<std::string, std::vector<std::string>> _operationMap;
     lc::ui::MainWindow* _mainWindow;
     static int _instanceCount;
