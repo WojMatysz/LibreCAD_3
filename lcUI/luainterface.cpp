@@ -31,10 +31,13 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     _L["luaInterface"] = this;
     registerGlobalFunctions(mainWindow);
 
+    // CMakeLists.txt generated lua script file - next to executable
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     sol::protected_function_result result = _L.script_file(luaFile.toStdString(), sol::script_pass_on_error);
+    // Script sets up lua table with names: package.path, ui_path, plugin_path, lua_path
 
     std::string luaPath = _L["lua_path"];
+    // Creates operation loader and load lua scripts called "operations" on object creation.
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
     if (!result.valid()) {

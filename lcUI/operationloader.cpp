@@ -21,8 +21,19 @@ OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainW
 void OperationLoader::loadLuaOperations(const std::string& luaPath)
 {
     // load operation definitions
-    _L.script_file(luaPath + "/actions/operations.lua");
-    _L.script_file(luaPath + "/createActions/createOperations.lua");
+    try
+    {
+        _L.script_file(luaPath + "/actions/operations.lua");
+        _L.script_file(luaPath + "/createActions/createOperations.lua");
+        std::cout << "Running scripts from: operations.lua and createOperation.lua\n";
+    }
+    catch(const sol::error & err)
+    {
+        std::cerr << "OperationLoader::loadLuaOperations: sol2 error occured when scripting files\n";
+        std::cerr << err.what();
+        throw;
+    }
+
     loadLuaFolder("createActions", "createOperations", luaPath);
 
     // create list of all operations in creationGroup and dimensionsGroup
@@ -44,40 +55,65 @@ void OperationLoader::loadLuaOperations(const std::string& luaPath)
         "context_transitions"
     };
 
-    // loop through all global Lua variables
-    for (auto& globalEntry : globalTable) 
+    try
     {
-        sol::object globalKey = globalEntry.first;
-        sol::object globalValue = globalEntry.second;
+        sol::function luaToString = _L["tostring"];
 
-        if (!globalKey.is<std::string>()) continue;
-        std::string globalName = globalKey.as<std::string>();
-
-        // look for globals whose name contains "Operation" and is a table
-        if (globalName.find("Operation") != std::string::npos && globalValue.is<sol::table>())
+        // loop through all global Lua variables
+        for (const auto & globalEntry : globalTable) 
         {
-            sol::table operationTable = globalValue.as<sol::table>();
-            foundProperties[globalName] = {};
+            sol::object globalKey = globalEntry.first;
+            sol::object globalValue = globalEntry.second;
 
-            // check for interesting properties in the operation table
-            for (auto& operationEntry : operationTable) 
+            if (!globalKey.is<std::string>()) 
             {
-                sol::object propertyKey = operationEntry.first;
-                if (!propertyKey.is<std::string>()) continue;
-                std::string propertyName = propertyKey.as<std::string>();
-                // if we found property from the set, then map it at current name
-                if (interestingProperties.count(propertyName)) foundProperties[globalName].insert(propertyName);
+                std::string globalKeyString = luaToString(globalKey);
+                std::string globalValueString = luaToString(globalValue);
+                std::cerr << "OperationLoader::loadLuaOperations: globalKey is not a string\n";
+                std::cerr << "globalKey: " <<  globalKeyString << "\n";
+                std::cerr << "globalEntry skipped:" << globalValueString << "\n";
+                continue;
             }
+            std::string globalName = globalKey.as<std::string>();
 
-            // assign group name for this operation
-            if (groupElements.at("creationGroupElements").count(globalName)) groupNames[globalName] = "Creation";
-            else if (groupElements.at("dimensionsGroupElements").count(globalName)) groupNames[globalName] = "Dimensions";
-            else groupNames[globalName] = "Modify";
+            // look for globals whose name contains "Operation" and is a table
+            if (globalName.find("Operation") != std::string::npos && globalValue.is<sol::table>())
+            {
+                sol::table operationTable = globalValue.as<sol::table>();
+                foundProperties[globalName] = {};
+
+                // check for interesting properties in the operation table
+                for (const auto & operationEntry : operationTable) 
+                {
+                    sol::object propertyKey = operationEntry.first;
+                    if (!propertyKey.is<std::string>()) 
+                    {
+                        std::string propertyKeyString = luaToString(globalKey);
+                        std::cerr << "OperationLoader::loadLuaOperations: propertyKey is not a string: " << propertyKeyString << "\n";
+                        std::cerr << "Skipping this property\n";
+                        continue;
+                    }
+                    std::string propertyName = propertyKey.as<std::string>();
+                    // if we found property from the set, then map it at current name
+                    if (interestingProperties.count(propertyName)) foundProperties[globalName].insert(propertyName);
+                }
+
+                // assign group name for this operation
+                if (groupElements.at("creationGroupElements").count(globalName)) groupNames[globalName] = "Creation";
+                else if (groupElements.at("dimensionsGroupElements").count(globalName)) groupNames[globalName] = "Dimensions";
+                else groupNames[globalName] = "Modify";
 
 
-            // initialize the operation
-            initializeOperation(globalName);
+                // initialize the operation
+                initializeOperation(globalName);
+            }
         }
+    }
+    catch(const sol::error & err)
+    {
+        std::cerr << "OperationLoader::loadLuaOperations: sol2 error occured when iterating through global table.\n";
+        std::cerr << err.what();
+        throw;
     }
 
     // cleanup
@@ -105,24 +141,45 @@ void OperationLoader::getSetOfGroupElements() {
     // fetch all globals from the Lua state
     sol::table globalTable = _L.globals();
 
+    // Debug / error support function
+    sol::function luaToString = _L["tostring"];
+
     // insert elements into their respective sets
     for (auto & globalEntry : globalTable)
     {
         sol::object globalKey = globalEntry.first;
         sol::object globalValue = globalEntry.second;
-        if (!globalKey.is<std::string>()) continue;
+        std::string globalKeyString = luaToString(globalKey);
+        std::string globalValueString = luaToString(globalValue);
+        if (!globalKey.is<std::string>()) 
+        {
+            /*
+            std::cerr << "OperationLoader::getSetOfGroupElements: globalKey is not a string\n";
+            std::cerr << "globalKey: " <<  globalKeyString << "\n";
+            std::cerr << "globalEntry skipped, globalValue:" << globalValueString << "\n";
+            */
+            continue;
+        }
         std::string globalName = globalKey.as<std::string>();
 
-        if (globalName.find("Operation") == std::string::npos) continue;
+        if (globalName.find("Operation") == std::string::npos) 
+        {
+            /*
+            std::cerr << "OperationLoader::getSetOfGroupElements: Can not find word: \"Operation\" in globalKey\n";
+            std::cerr << "globalEntry skipped, globalValue:" << globalValueString << "\n";
+            */
+            continue;
+        }
 
         if (globalName.find("Dim") != std::string::npos) groupElements["dimensionsGroupElements"].insert(globalName);
         else groupElements["creationGroupElements"].insert(globalName);
+        std::cout << "OperationLoader::getSetOfGroupElements: OK. Operation categorized and stored. globalKey: " << globalKeyString << "\n";
     }
 }
 
 void OperationLoader::initializeOperation(const std::string& vkey)
 {
-    for (const std::string& opkey : foundProperties[vkey])
+    for (const std::string & opkey : foundProperties[vkey])
     {
         // init function
         if (opkey == "init") {
@@ -163,52 +220,121 @@ void OperationLoader::addOperationCommandLine(const std::string & globalKey, con
 {
     widgets::CliCommand* cliCommand = static_cast<MainWindow*>(qmainWindow)->cliCommand();
 
-    auto createRunOp = [&](const std::string & globalKey, const std::string & init = "")
+    try
     {
-        if (init.empty()) _L["run_op"] = _L.script("function() run_basic_operation(" + globalKey + ") end");
-        else _L["run_op"] = _L.script("function() run_basic_operation(" + globalKey + ", '_init_" + init + "') end");
-    };
 
-    sol::object operation = _L[globalKey][operationKey];
-    if (operation.is<std::string>())
-    {
-        createRunOp(globalKey);
-        cliCommand->addCommand(operation.as<std::string>().c_str(), _L["run_op"]);
-    }
-
-    if (operation.is<sol::table>()) 
-    {
-        sol::table operationTable = operation.as<sol::table>();
-        for (const auto & pair : operationTable)
+        auto createRunOp = [&](const std::string & globalKey, const std::string & init = "")
         {
-            std::string key = pair.first.as<std::string>();
-            std::string command = pair.second.as<std::string>();
+            if (init.empty()) _L["run_op"] = _L.script("return function() run_basic_operation('" + globalKey + "') end");
+            else _L["run_op"] = _L.script("return function() run_basic_operation('" + globalKey + "', '_init_" + init + "') end");
+        };
 
-            // if key is digits only i.e. if no key provided, connect it to default init
-            if (std::find_if(key.begin(), key.end(), [](unsigned char c) { return !std::isdigit(c); }) == key.end())
+        sol::object operation = _L[globalKey][operationKey];
+        if (operation.is<std::string>())
+        {
+            createRunOp(globalKey);
+            cliCommand->addCommand(operation.as<std::string>().c_str(), _L["run_op"]);
+        }
+
+        if (operation.is<sol::table>()) 
+        {
+            sol::table operationTable = operation.as<sol::table>();
+            for (const auto & pair : operationTable)
             {
-                // connect to default init function
-                createRunOp(globalKey);
-                cliCommand->addCommand(command.c_str(), _L["run_op"]);
-            }
-            else {
-                // connect to provided init function
-                createRunOp(globalKey, command);
-                cliCommand->addCommand(key.c_str(), _L["run_op"]);
+                try 
+                {
+
+                    sol::function luaToString = _L["tostring"];
+                    std::string keyString = luaToString(pair.first);
+                    /*
+                    if(!pair.first.is<std::string>())
+                    {
+                        std::cerr << "OperationLoader::addOperationCommandLine: Key is not a string: " <<  keyString << "\n";
+                    }
+                    */
+
+                    if(!pair.second.is<std::string>())
+                    {
+                        std::string valueString = luaToString(pair.second);
+                        std::cerr << "OperationLoader::addOperationCommandLine: Value is not a string: " << valueString << "\n";
+                    }
+
+
+                    // Also should be safeguarded
+                    std::string command = pair.second.as<std::string>();
+
+                    // If the key is all digits, treat it as default init
+                    bool keyIsDigits = std::all_of(keyString.begin(), keyString.end(),
+                            [](unsigned char c){ return std::isdigit(c); });
+
+                    if (keyIsDigits) 
+                    {
+                        // connect to default init function
+                        createRunOp(globalKey);
+                        cliCommand->addCommand(command.c_str(), _L["run_op"]);
+                    } 
+                    else 
+                    {
+                        // connect to provided init function
+                        createRunOp(globalKey, command);
+                        cliCommand->addCommand(keyString.c_str(), _L["run_op"]);
+                    }
+                }
+                catch(const sol::error & err)
+                {
+                    std::cerr << "OperationLoader::addOperationCommandLine: error occured when iterating through operation table\n";
+                    std::cerr << err.what();
+                    throw;
+                }
             }
         }
     }
+    catch(const sol::error & err)
+    {
+        std::cerr << "OperationLoader::addOperationCommandLine: SOL2 error occured\n";
+        std::cerr << err.what();
+        throw;
+    }
 }
 
-void OperationLoader::addOperationMenuAction(const std::string& vkey, const std::string& opkey) {
-    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
-    std::map<std::string, std::string> map = _L[vkey][opkey];
-
-    for (auto element : map)
+void OperationLoader::addOperationMenuAction(const std::string & operationName, const std::string & propertyName)
+{
+    MainWindow* mainWindow = static_cast<MainWindow*>(qmainWindow);
+    try
     {
-        if (element.first == "default") _L.script("run_op = function() run_basic_operation(" + vkey + ") end");
-        else _L.script("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
-        mWindow->connectMenuItem(element.second, _L["run_op"]);
+        sol::table menuActionsTable = _L[operationName][propertyName];
+
+        for (const auto & menuActionEntry : menuActionsTable) 
+        {
+            sol::object luaKey = menuActionEntry.first;
+            sol::object luaValue = menuActionEntry.second;
+
+            // ignore non-string entries
+            if (!luaKey.is<std::string>() || !luaValue.is<std::string>()) 
+            {
+                sol::function luaToString = _L["tostring"];
+                std::string luaKeyString = luaToString(luaKey);
+                std::string luaValueString = luaToString(luaValue);
+                std::cerr << "OperationLoader::addOperationMenuAction: luaKey or luaValue are not a string.\n";
+                std::cerr << "Skipping luaKey: " << luaKeyString << " luaValue: " << luaValueString << "\n";
+                continue; 
+            }
+
+            std::string actionKey = luaKey.as<std::string>();
+            std::string actionValue = luaValue.as<std::string>();
+
+            if (actionKey == "default") _L.script("run_op = function() run_basic_operation('" + operationName + "') end");
+            else _L.script("run_op = function() run_basic_operation('" + operationName + "', '_init_" + actionKey + "') end");
+
+            mainWindow->connectMenuItem(actionValue, _L["run_op"]);
+        }
+    }
+
+    catch(const sol::error & err)
+    {
+        std::cerr << "OperationLoader::addOperationMenuAction: sol2 error  occured\n";
+        std::cerr << err.what();
+        throw;
     }
 }
 
@@ -218,15 +344,17 @@ void OperationLoader::addOperationIcon(const std::string& vkey, const std::strin
     std::string tooltip;
 
     // if description not provided, use operation name
-    if (foundProperties[vkey].find("description") != foundProperties[vkey].end()) {
+    if (foundProperties[vkey].find("description") != foundProperties[vkey].end())
+    {
         tooltip = _L[vkey]["description"].get<std::string>();
     }
-    else {
+    else 
+    {
         tooltip = vkey.substr(0, vkey.find("Operation"));
     }
 
     std::string iconPath = ":/icons/" + icon;
-    _L.script("run_op = function() run_basic_operation(" + vkey + ") end");
+    _L.script("run_op = function() run_basic_operation('" + vkey + "') end");
 
     toolbar->addButton(vkey.c_str(), iconPath.c_str(), groupNames[vkey].c_str(), _L["run_op"], tooltip.c_str());
 }

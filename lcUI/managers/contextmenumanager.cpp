@@ -121,7 +121,7 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
     api::Menu* groupMenu = new api::Menu("Creation");
     for (const std::string& opName : _operationMap["Creation"]) {
         lc::ui::api::MenuItem* opItem = new lc::ui::api::MenuItem(cleanOperationName(opName).c_str());
-        _L.script("contextmenu_op = function() run_basic_operation(" + opName + ") end");
+        _L.script("contextmenu_op = function() run_basic_operation('" + opName + "') end");
         opItem->addCallback(_L["contextmenu_op"]);
         groupMenu->addItem(opItem);
     }
@@ -132,7 +132,7 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
     api::Menu* groupMenu2 = new api::Menu("Dimensions");
     for (const std::string& opName : _operationMap["Dimensions"]) {
         lc::ui::api::MenuItem* opItem = new lc::ui::api::MenuItem(cleanOperationName(opName).c_str());
-        _L.script("contextmenu_op = function() run_basic_operation(" + opName + ") end");
+        _L.script("contextmenu_op = function() run_basic_operation('" + opName + "') end");
         opItem->addCallback(_L["contextmenu_op"]);
         groupMenu2->addItem(opItem);
     }
@@ -151,7 +151,7 @@ void ContextMenuManager::selectedCommands(api::Menu* menu, const std::vector<lc:
     api::Menu* groupMenu = new api::Menu("Modify");
     for (const std::string& opName : _operationMap["Modify"]) {
         lc::ui::api::MenuItem* opItem = new lc::ui::api::MenuItem(cleanOperationName(opName).c_str());
-        _L.script("contextmenu_op = function() run_basic_operation(" + opName + ") end");
+        _L.script("contextmenu_op = function() run_basic_operation('" + opName + "') end");
         opItem->addCallback(_L["contextmenu_op"]);
         groupMenu->addItem(opItem);
     }

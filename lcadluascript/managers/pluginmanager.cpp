@@ -31,7 +31,8 @@ void PluginManager::loadPlugins()
     } 
     catch(const fs::filesystem_error& e) 
     {
-        std::cerr << "Error accessing plugins directory:\n" << e.what() << "\n";
+        std::cerr << "PluginManager::loadPlugins: Error accessing plugins directory:\n" << e.what() << "\n";
+        std::cerr << "Can not load plugins.\n";
     }
 }
 
