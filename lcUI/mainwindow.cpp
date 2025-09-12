@@ -154,13 +154,14 @@ void MainWindow::runOperation(sol::table operation, const std::string & init_met
 
     // call operation (__call metamethod) and run init
     sol::function operationCall = operation;
-    sol::table op = operationCall();
-    _luaInterface.setOperation(op);
+   // sol::table op = operationCall();
+    //_luaInterface.setOperation(op);
+    _luaInterface.setOperation(operation);
 
     sol::function initFunction;
-    if(init_method.empty()) initFunction = op["_init_default"];
-    else initFunction = op[init_method];
-    if(initFunction.valid()) initFunction(op);  // pass self
+    if(init_method.empty()) initFunction = operation["_init_default"];
+    else initFunction = operation[init_method];
+    if(initFunction.valid()) initFunction(operation);  // pass self
 
     _oldOperation = operation;
     _oldOpInitMethod = init_method;
@@ -610,6 +611,8 @@ void MainWindow::triggerFinishOperation()
 
 void MainWindow::triggerCommandEntered(QString command)
 {
+    std::cout << "MainWindow::triggerCommandEntered: called\n";
+    std::cout << "Command: " << command.toStdString() << "\n";
     _cliCommand.runCommand(command.toStdString().c_str());
 }
 

@@ -78,6 +78,7 @@ void LuaScript::registerGlobalFunctions(sol::state & luaVM)
     // register common functions i.e. run_basic_operation and message
     luaVM["mainWindow"] = static_cast<lc::ui::MainWindow*>(_mainWindow);
     luaVM.script("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    // luaVM.script("run_basic_operation = function(operation, init_method) print('Executing run_basic_operation from LuaScript') local op = _G[operation] local init = init_method or "" mainWindow:runOperation(op, init) end");
 
     // cli command helper functions
     luaVM.script("message = function(m) mainWindow:cliCommand():write(m) end");

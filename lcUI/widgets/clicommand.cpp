@@ -42,6 +42,12 @@ CliCommand::~CliCommand() {
 }
 
 bool CliCommand::addCommand(const char* name, sol::function cb) {
+
+    std::cout << "Adding command " << name << "\n";
+    if (cb.valid()) std::cout << "cb is valid\n";
+    if (cb.is<sol::function>()) std::cout << "cb is a function\n";
+    if (cb.is<sol::table>()) std::cout << "cb is a table\n";
+
     if(_commands->stringList().indexOf(name) == -1) {
         auto newList = _commands->stringList();
         newList << QString(name);
@@ -230,6 +236,7 @@ void CliCommand::closeEvent(QCloseEvent* event)
 void CliCommand::runCommand(const char* command)
 {
     if (_commands_cb.find(command) == _commands_cb.end()) {
+        std::cerr << "Can not find callback for this cammand: " << command << "\n";
         return;
     }
 
@@ -237,8 +244,11 @@ void CliCommand::runCommand(const char* command)
         write(std::string(command) + " command has been disabled.");
         return;
     }
+    std::cout << "Callback found!\n";
+    std::cout << "Command: " << command << "\n";
     _commands_entered.push_back(command);
     sol::function & cb = _commands_cb[command];
+    if(!cb.valid()) std::cout << "Callback is not valid\n";
     cb();
 }
 

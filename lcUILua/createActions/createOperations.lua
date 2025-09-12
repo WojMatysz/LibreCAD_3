@@ -5,6 +5,7 @@ setmetatable(CreateOperations, {
 })
 
 function CreateOperations:_init(builder, step)
+    print("CreateOperations _init called, step=" .. tostring(step))
     Operations._init(self)
 
     self.prevEntity = nil

@@ -231,8 +231,8 @@ void addLCBindings(sol::state & luaVM)
                     static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu)
                     ),
             "runOperation", sol::overload(
-                    &lc::ui::MainWindow::runOperation, 
-                    [](lc::ui::MainWindow& self, sol::table operation) { self.runOperation(operation); }
+                    static_cast<void(lc::ui::MainWindow::*)(sol::table, const std::string&)>(&lc::ui::MainWindow::runOperation),
+                    [](lc::ui::MainWindow& self, sol::table operation) { self.runOperation(operation, ""); }
                     )
                 );
 

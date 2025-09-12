@@ -118,12 +118,23 @@ void LuaInterface::finishOperation()
 }
 
 void LuaInterface::registerEvent(const std::string & event, const sol::object & callback) {
-    if (!callback.valid()) return;
+    if (!callback.valid()) 
+    {
+        std::cerr << "LuaInterface::registerEvent: callback is NOT a valid sol::object\n";
+        std::cerr << "Event: " << event << "\n";
+        return;
+    }
 
     if (callback.is<sol::table>()) {
         sol::table t = callback.as<sol::table>();
         sol::function onEvent = t["onEvent"];
+        std::cout << "LuaInterface::registerEvent: callback is a sol::table\n";
         if (!onEvent.valid()) return;  // table without onEvent: ignore
+    }
+    else
+    {
+        std::cerr << "LuaInterface::registerEvent: callback is NOT a sol::table\n";
+        std::cerr << "Event: " << event << "\n";
     }
 
     // either a function, or a table with onEvent
@@ -148,6 +159,10 @@ void LuaInterface::triggerEvent(const std::string& event, sol::table args) {
         else if(eventCallback.valid() && eventCallback.is<sol::table>()) {
             sol::table callbackTable = eventCallback;
             callbackTable["onEvent"](eventCallback, event, args);
+        }
+        else
+        {
+            std::cerr << "LuaInterface::triggerEvent: Can not trigger event: " << event << " - event is not valid\n";
         }
     }
 }

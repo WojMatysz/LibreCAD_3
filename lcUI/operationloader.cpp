@@ -25,7 +25,7 @@ void OperationLoader::loadLuaOperations(const std::string& luaPath)
     {
         _L.script_file(luaPath + "/actions/operations.lua");
         _L.script_file(luaPath + "/createActions/createOperations.lua");
-        std::cout << "Running scripts from: operations.lua and createOperation.lua\n";
+//        std::cout << "Running scripts from: operations.lua and createOperation.lua\n";
     }
     catch(const sol::error & err)
     {
@@ -99,9 +99,21 @@ void OperationLoader::loadLuaOperations(const std::string& luaPath)
                 }
 
                 // assign group name for this operation
-                if (groupElements.at("creationGroupElements").count(globalName)) groupNames[globalName] = "Creation";
-                else if (groupElements.at("dimensionsGroupElements").count(globalName)) groupNames[globalName] = "Dimensions";
-                else groupNames[globalName] = "Modify";
+                if (groupElements.at("creationGroupElements").count(globalName)) 
+                {
+ //                   std::cout << "Add operation: " << globalName << " to group: \"Creation\"\n";
+                    groupNames[globalName] = "Creation";
+                }
+                else if (groupElements.at("dimensionsGroupElements").count(globalName)) 
+                    {
+  //                      std::cout << "Add operation: " << globalName << " to group: \"Dimensions\"\n";
+                        groupNames[globalName] = "Dimensions";
+                    }
+                else 
+                {
+   //                 std::cout << "Add operation: " << globalName << " to group: \"Modify\"\n";
+                    groupNames[globalName] = "Modify";
+                }
 
 
                 // initialize the operation
@@ -173,7 +185,7 @@ void OperationLoader::getSetOfGroupElements() {
 
         if (globalName.find("Dim") != std::string::npos) groupElements["dimensionsGroupElements"].insert(globalName);
         else groupElements["creationGroupElements"].insert(globalName);
-        std::cout << "OperationLoader::getSetOfGroupElements: OK. Operation categorized and stored. globalKey: " << globalKeyString << "\n";
+//        std::cout << "OperationLoader::getSetOfGroupElements: OK. Operation categorized and stored. globalKey: " << globalKeyString << "\n";
     }
 }
 
@@ -184,35 +196,42 @@ void OperationLoader::initializeOperation(const std::string& vkey)
         // init function
         if (opkey == "init") {
             // eg. _L["LineOperations"]["init"]()
+ //           std::cout << "OperationLoader::initializeOperation: init called with key: " << vkey << "\n";
             _L[vkey][opkey]();
         }
 
         // command line
         if (opkey == "command_line") {
+  //          std::cout << "OperationLoader::initializeOperation: command_line called with key: " << vkey << "\n";
             addOperationCommandLine(vkey, opkey);
         }
 
         // menu actions
         if (opkey == "menu_actions") {
+   //         std::cout << "OperationLoader::initializeOperation: menu_action called with key: " << vkey << "\n";
             addOperationMenuAction(vkey, opkey);
         }
 
         // Toolbar attributes
         if (opkey == "icon") {
+//            std::cout << "OperationLoader::initializeOperation: icon called with key: " << vkey << "\n";
             addOperationIcon(vkey, opkey);
         }
 
         // operation icons
         if (opkey == "operation_options") {
+ //           std::cout << "OperationLoader::initializeOperation: operation_option called with key: " << vkey << "\n";
             addOperationToolbarOptions(vkey, opkey);
         }
 
         // context transitions
         if (opkey == "context_transitions") {
+  //          std::cout << "OperationLoader::initializeOperation: context_trasnitions called with key: " << vkey << "\n";
             addContextTransitions(vkey, opkey);
         }
     }
 
+//    std::cout << "OperationLoader::initializeOperation: invoking addContextMenuOperations with key: " << vkey << "\n";
     addContextMenuOperations(vkey);
 }
 
@@ -223,21 +242,45 @@ void OperationLoader::addOperationCommandLine(const std::string & globalKey, con
     try
     {
 
+        auto createRunOp = [&](const std::string & globalKey, const std::string & init = "") 
+        {
+            sol::table op = _L[globalKey]; // capture the table directly
+            sol::function runBasicOp = _L["run_basic_operation"]; // get Lua function
+            if (init.empty()) 
+            {
+                _L["run_op"] = [runBasicOp, op, this]() {
+                    std::cout << "Executing runOp with default init\n";
+                    runBasicOp(op, "");
+                };
+            } 
+            else 
+            {
+                _L["run_op"] = [runBasicOp, op, init, this]() {
+                    std::cout << "Executing runOp with custom init\n";
+                    runBasicOp(op, "_init_" + init);
+                };
+            }
+        };        
+        /*
         auto createRunOp = [&](const std::string & globalKey, const std::string & init = "")
         {
-            if (init.empty()) _L["run_op"] = _L.script("return function() run_basic_operation('" + globalKey + "') end");
-            else _L["run_op"] = _L.script("return function() run_basic_operation('" + globalKey + "', '_init_" + init + "') end");
+            if (init.empty()) _L["run_op"] = _L.script("return function() print('Executing runOp with default init') run_basic_operation('" + globalKey + "') end");
+            else _L["run_op"] = _L.script("return function() print('Executing runOp with  custom init') run_basic_operation('" + globalKey + "', '_init_" + init + "') end");
         };
+        */
 
         sol::object operation = _L[globalKey][operationKey];
         if (operation.is<std::string>())
         {
             createRunOp(globalKey);
             cliCommand->addCommand(operation.as<std::string>().c_str(), _L["run_op"]);
+//            std::cout << "Operation: " << globalKey << ", " << operationKey << " is a string - perform callbacks registration.\n";
+            return;
         }
 
         if (operation.is<sol::table>()) 
         {
+//            std::cout << "Operation: " << globalKey << ", " << operationKey << " is a sol::table - perform callbacks registration.\n";
             sol::table operationTable = operation.as<sol::table>();
             for (const auto & pair : operationTable)
             {
@@ -256,7 +299,7 @@ void OperationLoader::addOperationCommandLine(const std::string & globalKey, con
                     if(!pair.second.is<std::string>())
                     {
                         std::string valueString = luaToString(pair.second);
-                        std::cerr << "OperationLoader::addOperationCommandLine: Value is not a string: " << valueString << "\n";
+//                        std::cerr << "OperationLoader::addOperationCommandLine: Value is not a string: " << valueString << "\n";
                     }
 
 
@@ -272,12 +315,14 @@ void OperationLoader::addOperationCommandLine(const std::string & globalKey, con
                         // connect to default init function
                         createRunOp(globalKey);
                         cliCommand->addCommand(command.c_str(), _L["run_op"]);
+ //                       std::cout << "OperationLoader::addOperationCommandLine: Global key is a digit - add command to CliCommand\n";
                     } 
                     else 
                     {
                         // connect to provided init function
                         createRunOp(globalKey, command);
                         cliCommand->addCommand(keyString.c_str(), _L["run_op"]);
+  //                      std::cout << "OperationLoader::addOperationCommandLine: Global key is NOT a digit - add command to CliCommand\n";
                     }
                 }
                 catch(const sol::error & err)

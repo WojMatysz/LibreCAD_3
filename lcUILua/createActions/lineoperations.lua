@@ -37,6 +37,7 @@ setmetatable(LineOperations, {
 })
 
 function LineOperations:_init()
+    print("LineOperations _init called, step=" .. tostring(step))
     CreateOperations._init(self, lc.builder.LineBuilder, "setFirstPoint")
     self.length = nil
 end
