@@ -101,23 +101,29 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
 }
 
 sol::table LuaInterface::operation() {
-    return _operation;
+    if (_operation.valid() && _operation.get_type() == sol::type::table) 
+    {
+        return _operation.as<sol::table>();
+    }
+    return sol::make_object(luaVM(), sol::lua_nil).as<sol::table>();
 }
 
-void LuaInterface::setOperation(sol::table operation) {
-    _operation = std::move(operation);
+void LuaInterface::setOperation(sol::object operation) {
+    _operation = operation;
 }
 
 void LuaInterface::finishOperation() 
 {
     if(_operation.valid())
     {
-        sol::function close = _operation["close"];
+        sol::table operation = this->operation();
+        sol::function close = operation["close"];
         if(close.valid()) close(_operation);
     }
 }
 
 void LuaInterface::registerEvent(const std::string & event, const sol::object & callback) {
+    std::cout << "LuaInterface::registerEvent: called\n";
     if (!callback.valid()) 
     {
         std::cerr << "LuaInterface::registerEvent: callback is NOT a valid sol::object\n";
@@ -149,6 +155,7 @@ void LuaInterface::deleteEvent(const std::string& event, const sol::object & cal
 }
 
 void LuaInterface::triggerEvent(const std::string& event, sol::table args) {
+    //std::cout << "LuaInterface::triggerEvent: called, event: " << event << "\n";
     auto events = _events[event];
     for(auto eventCallback : events) {
         if(eventCallback.valid() && eventCallback.is<sol::function>()) {

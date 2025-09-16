@@ -39,6 +39,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setPath", &lc::builder::LinePatternBuilder::setPath
             );
 
+    builder["LinePatternBuilder"] = []() { return lc::builder::LinePatternBuilder{}; };
+
 
 
     builder.new_usertype<lc::builder::LayerBuilder>(
@@ -57,6 +59,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setName", &lc::builder::LayerBuilder::setName
             );
 
+    builder["LayerBuilder"] = []() { return lc::builder::LayerBuilder{}; };
 
 
     builder.new_usertype<lc::builder::CADEntityBuilder>(
@@ -73,6 +76,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer),
             "setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo)
             );
+
+    builder["CADEntityBuilder"] = []() { return lc::builder::CADEntityBuilder{}; };
 
     builder.new_usertype<lc::builder::ArcBuilder>(
             "ArcBuilder", 
@@ -91,9 +96,11 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "startAngle", &lc::builder::ArcBuilder::startAngle
             );
 
+    builder["ArcBuilder"] = []() { return lc::builder::ArcBuilder{}; };
 
 
-    builder.new_usertype<lc::builder::CircleBuilder>("CircleBuilder", 
+    builder.new_usertype<lc::builder::CircleBuilder>(
+            "CircleBuilder", 
             sol::constructors<lc::builder::CircleBuilder()>(),
             sol::base_classes, sol::bases<lc::builder::CADEntityBuilder>(),
             "build", &lc::builder::CircleBuilder::build,
@@ -107,6 +114,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "modifyForTempEntity", &lc::builder::CircleBuilder::modifyForTempEntity
             );
 
+    builder["CircleBuilder"] = []() { return lc::builder::CircleBuilder{}; };
 
 
     builder.new_usertype<lc::builder::DimensionBuilder>(
@@ -128,6 +136,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "textAngle", &lc::builder::DimensionBuilder::textAngle
             );
 
+
     builder.new_usertype<lc::builder::PointBuilder>(
             "PointBuilder",
             sol::constructors<lc::builder::PointBuilder()>(),
@@ -136,6 +145,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "coordinate", &lc::builder::PointBuilder::coordinate,
             "setCoordinate", &lc::builder::PointBuilder::setCoordinate
             );
+
+    builder["PointBuilder"] = []() { return lc::builder::PointBuilder{}; };
 
     builder.new_usertype<lc::builder::DimAlignedBuilder>(
             "DimAlignedBuilder",
@@ -148,6 +159,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setDefinitionPoint2", &lc::builder::DimAlignedBuilder::setDefinitionPoint2,
             "setDefinitionPoint3", &lc::builder::DimAlignedBuilder::setDefinitionPoint3
             );
+
+    builder["DimAlignedBuilder"] = []() { return lc::builder::DimAlignedBuilder{}; };
 
     builder.new_usertype<lc::builder::DimAngularBuilder>(
             "DimAngularBuilder",
@@ -165,6 +178,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setDefLine22", &lc::builder::DimAngularBuilder::setDefLine22
             );
 
+    builder["DimAngularBuilder"] = []() { return lc::builder::DimAngularBuilder{}; };
 
 
     builder.new_usertype<lc::builder::DimDiametricBuilder>(
@@ -178,6 +192,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setLeader", &lc::builder::DimDiametricBuilder::setLeader
             );
 
+    builder["DimDiametricBuilder"] = []() { return lc::builder::DimDiametricBuilder{}; };
 
 
     builder.new_usertype<lc::builder::DimLinearBuilder>(
@@ -196,6 +211,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             );
 
 
+    builder["DimLinearBuilder"] = []() { return lc::builder::DimLinearBuilder{}; };
 
 
     builder.new_usertype<lc::builder::DimRadialBuilder>(
@@ -210,7 +226,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setLeader", &lc::builder::DimRadialBuilder::setLeader
             );
 
-
+    builder["DimRadialBuilder"] = []() { return lc::builder::DimRadialBuilder{}; };
 
 
 
@@ -233,6 +249,7 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "startAngle", &lc::builder::EllipseBuilder::startAngle
             );
 
+    builder["EllipseBuilder"] = []() { return lc::builder::EllipseBuilder{}; };
 
 
     builder.new_usertype<lc::builder::LineBuilder>(
@@ -246,6 +263,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "startPoint", &lc::builder::LineBuilder::start,
             "getLineAngle", &lc::builder::LineBuilder::getLineAngle
             );
+
+    builder["LineBuilder"] = [](){ return lc::builder::LineBuilder{}; };
 
 
 
@@ -282,6 +301,9 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "startTangent", &lc::builder::SplineBuilder::startTangent
                 );
 
+
+    builder["SplineBuilder"] = []() { return lc::builder::SplineBuilder{}; };
+
     builder.new_usertype<lc::builder::LWPolylineBuilder>(
             "LWPolylineBuilder",
             sol::constructors<lc::builder::LWPolylineBuilder()>(),
@@ -297,6 +319,9 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "build", &lc::builder::LWPolylineBuilder::build
             );
 
+
+    builder["LWPolylineBuilder"] = []() { return lc::builder::LWPolylineBuilder{}; };
+
     builder.new_usertype<lc::builder::InsertBuilder>(
             "InsertBuilder", 
             sol::constructors<lc::builder::InsertBuilder()>(),
@@ -310,6 +335,9 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock,
             "setDocument", &lc::builder::InsertBuilder::setDocument
             );
+
+
+    builder["InsertBuilder"] = []() { return lc::builder::InsertBuilder{}; };
 
     builder.new_usertype<lc::builder::TextBaseBuilder>(
             "TextBaseBuilder",
@@ -325,6 +353,8 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "setAngle", &lc::builder::TextBaseBuilder::setAngle
             );
 
+    builder["TextBaseBuilder"] = []() { return lc::builder::TextBaseBuilder{}; };
+
     builder.new_usertype<lc::builder::TextBuilder>("TextBuilder", 
             sol::constructors<lc::builder::TextBuilder()>(),
             sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
@@ -332,10 +362,15 @@ void import_lc_builder_namespace(sol::state & luaVM)
             "copy", &lc::builder::TextBuilder::copy
             );
 
+
+    builder["TextBuilder"] = []() { return lc::builder::TextBuilder{}; };
+
     builder.new_usertype<lc::builder::MTextBuilder>("MTextBuilder", 
             sol::constructors<lc::builder::MTextBuilder()>(),
             sol::base_classes, sol::bases<lc::builder::TextBaseBuilder>(),
             "build", &lc::builder::MTextBuilder::build,
             "copy", &lc::builder::MTextBuilder::copy
             );
+
+    builder["MTextBuilder"] = []() { return lc::builder::MTextBuilder{}; };
 }

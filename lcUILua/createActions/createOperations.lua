@@ -19,6 +19,7 @@ function CreateOperations:_init(builder, step)
 end
 
 function CreateOperations:onEvent(eventName, data)
+    --print("CreateOperations: onEvent called")
     if(self.step == 'PAUSE') then
         return
     end
@@ -69,6 +70,7 @@ function CreateOperations:removeTempEntity()
 end
 
 function CreateOperations:unregisterEvents()
+    print("CreateOperation: unregisterEvents called")
     luaInterface:deleteEvent('mouseMove', self)
     luaInterface:deleteEvent('number', self)
     luaInterface:deleteEvent('point', self)
@@ -76,6 +78,7 @@ function CreateOperations:unregisterEvents()
 end
 
 function CreateOperations:registerEvents()
+    print("CreateOperation: registerEvents called")
     luaInterface:registerEvent('point', self)
     luaInterface:registerEvent('mouseMove', self)
     luaInterface:registerEvent('number', self)

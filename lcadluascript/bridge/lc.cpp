@@ -10,7 +10,10 @@ void import_lc_namespace(sol::state & luaVM) {
     luaVM["lc"] = luaVM.create_table();
     sol::table lcTable = luaVM["lc"];
 
-    lcTable.new_usertype<lc::Visitable>("Visitable", "accept", &lc::Visitable::accept);
+    lcTable.new_usertype<lc::Visitable>(
+            "Visitable", 
+            "accept", &lc::Visitable::accept
+            );
 
     lcTable.new_usertype<lc::Color>(
             "Color", 
@@ -23,6 +26,13 @@ void import_lc_namespace(sol::state & luaVM) {
             "greenI", &lc::Color::greenI,
             "red", &lc::Color::red,
             "redI", &lc::Color::redI
+            );
+
+    lcTable["Color"] = sol::overload(
+            []() { return lc::Color{}; },
+            [](int r, int g, int b, int a) { return lc::Color{r, g, b, a}; },
+            [](double r, double g, double b, double a) { return lc::Color{r, g, b, a}; },
+            [](const lc::Color & other) { return lc::Color{other}; }
             );
 
     lcTable.new_usertype<lc::EntityDispatch>(

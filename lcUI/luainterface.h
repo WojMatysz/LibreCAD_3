@@ -62,7 +62,7 @@ public:
 
     sol::table operation();
 
-    void setOperation(sol::table);
+    void setOperation(sol::object);
 
     void finishOperation();
 
@@ -81,7 +81,7 @@ private:
 private:
     sol::state _L;
     lc::lua::PluginManager _pluginManager;
-    sol::table _operation;
+    sol::object _operation;
     std::map<std::string, std::vector<sol::object>> _events;
 };
 }

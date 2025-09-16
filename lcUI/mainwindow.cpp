@@ -122,6 +122,7 @@ void MainWindow::addOtherMenus() {
     }
 }
 
+/*
 void MainWindow::runOperation(sol::table operation, const std::string & init_method)
 {
     _cliCommand.setFocus();
@@ -154,14 +155,72 @@ void MainWindow::runOperation(sol::table operation, const std::string & init_met
 
     // call operation (__call metamethod) and run init
     sol::function operationCall = operation;
-   // sol::table op = operationCall();
-    //_luaInterface.setOperation(op);
-    _luaInterface.setOperation(operation);
+    sol::table operationInstance = operationCall(); // Call returns self (an instance of Operation)
+    _luaInterface.setOperation(operationInstance);
 
     sol::function initFunction;
-    if(init_method.empty()) initFunction = operation["_init_default"];
-    else initFunction = operation[init_method];
-    if(initFunction.valid()) initFunction(operation);  // pass self
+    if(init_method.empty()) initFunction = operationInstance["_init_default"];
+    else initFunction = operationInstance[init_method];
+    if(initFunction.valid()) initFunction(operationInstance);  // pass self
+
+    _oldOperation = operation;
+    _oldOpInitMethod = init_method;
+}
+*/
+
+void MainWindow::runOperation(sol::table operation, const std::string & init_method)
+{
+    _cliCommand.setFocus();
+    _luaInterface.finishOperation();
+    _cadMdiChild.viewer()->setOperationActive(true);
+    sol::state& luaVM = _luaInterface.luaVM();
+
+    // if current operation had extra operation _toolbar icons, add them
+    if (operation["operation_options"].valid()) 
+    {
+        std::string commandLine = operation["command_line"];
+        auto it = operation_options.find(commandLine + init_method);
+        if (it == operation_options.end()) 
+        {
+            it = operation_options.find(commandLine);
+        }
+
+        if (it != operation_options.end()) 
+        {
+            for (sol::function& optionCall : it->second) 
+            {
+                optionCall(); // run operation which adds option icon to toolbar
+            }
+        }
+    }
+
+    // add toolbar cancel button
+    luaVM.script(R"(finish_op = function() finish_operation() end)");
+    _toolbar.addButton("", ":/icons/quit.svg", "Current operation", luaVM["finish_op"], "Cancel");
+    luaVM["finish_op"] = sol::lua_nil;
+
+    // call operation (__call metamethod) and set result as current operation
+    sol::function operationCall = operation;
+    sol::protected_function_result pfr = operationCall();
+    if (!pfr.valid()) 
+    {
+        sol::error err = pfr;
+        qDebug() << "Lua: operation call failed:" << err.what();
+        return;
+    }
+
+    sol::object result = pfr.get<sol::object>();
+    _luaInterface.setOperation(result);
+
+    sol::table op = _luaInterface.operation(); // safe, holds strong ref
+
+    // run init function
+    sol::function initFunction;
+    if (init_method.empty()) initFunction = op["_init_default"];
+    else initFunction = op[init_method];
+
+    if (initFunction.valid()) initFunction(op); // pass self 
+    else qDebug() << "Init function not found: " << QString::fromStdString(init_method);
 
     _oldOperation = operation;
     _oldOpInitMethod = init_method;
@@ -498,6 +557,7 @@ void MainWindow::removeMenu(int position) {
 
 void MainWindow::triggerMousePressed()
 {
+    std::cout << "MainWindow::triggerMousePressed: called\n";
     lc::geo::Coordinate cursorPos = _cadMdiChild.cursor()->position();
     sol::state & luaVM = _luaInterface.luaVM();
     luaVM["mousePressed"] = luaVM.create_table();
