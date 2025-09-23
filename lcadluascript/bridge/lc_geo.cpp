@@ -61,6 +61,14 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "sub", [](lc::geo::Coordinate coordinate, lc::geo::Coordinate o) { return coordinate - o; }
             );
 
+        geo["Coordinate"] = sol::overload(
+                []() { return lc::geo::Coordinate{}; },
+                [](double x, double y, double z) { return lc::geo::Coordinate{x, y, z}; },
+                [](double x, double y) { return lc::geo::Coordinate{x, y}; },
+                [](double angle) { return lc::geo::Coordinate{angle}; },
+                [](const lc::geo::Coordinate & other) { return lc::geo::Coordinate{other}; }
+                );
+
     geo.new_usertype<lc::geo::Base>("Base");
 
     geo.new_usertype<lc::geo::Vector>(
@@ -75,6 +83,11 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "nearestPointOnEntity", &lc::geo::Vector::nearestPointOnEntity,
             "nearestPointOnPath", &lc::geo::Vector::nearestPointOnPath,
             "start", &lc::geo::Vector::start
+            );
+
+    geo["Vector"] = sol::overload(
+            [](const lc::geo::Coordinate & first, const lc::geo::Coordinate & second) { return lc::geo::Vector{first, second}; },
+            [](const lc::geo::Vector & other) { return lc::geo::Vector{other}; }
             );
 
     geo.new_usertype<lc::geo::Area>(
@@ -99,6 +112,12 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "width", &lc::geo::Area::width
             );
 
+    geo["Area"] = sol::overload(
+            [](const lc::geo::Coordinate & first, const lc::geo::Coordinate & second) { return lc::geo::Area{first, second}; },
+            []() { return lc::geo::Area{}; },
+            [](const lc::geo::Coordinate & coord, double width, double height) { return lc::geo::Area{coord, width, height}; }
+            );
+
     geo.new_usertype<lc::geo::Arc>(
             "Arc",
             sol::constructors<lc::geo::Arc(lc::geo::Coordinate, double, double, double, bool), lc::geo::Arc(const lc::geo::Arc &)>(),
@@ -121,6 +140,14 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "radius", &lc::geo::Arc::radius,
             "startAngle", &lc::geo::Arc::startAngle,
             "startP", &lc::geo::Arc::startP
+            );
+
+    geo["Arc"] = sol::overload(
+            [](const lc::geo::Coordinate & center, double radius, double startAngle, double endAngle, bool isCCW) 
+            { return lc::geo::Arc{center, radius, startAngle, endAngle, isCCW}; },
+            [](const lc::geo::Coordinate & center, double radius, double startAngle, double endAngle) 
+            { return lc::geo::Arc{center, radius, startAngle, endAngle}; },
+            [](const lc::geo::Arc & other) { return lc::geo::Arc{other}; }
             );
 
     geo.new_usertype<lc::geo::BezierBase>(
@@ -170,6 +197,10 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "splitHalf", &lc::geo::Bezier::splitHalf,
             "tangent", &lc::geo::Bezier::tangent
             );
+    geo["Bezier"] = sol::overload(
+            [](lc::geo::Coordinate pointA, lc::geo::Coordinate pointB, lc::geo::Coordinate pointC){ return lc::geo::Bezier{pointA, pointB, pointC}; },
+            [](const lc::geo::Bezier & other){ return lc::geo::Bezier{other}; }
+            );
 
     geo.new_usertype<lc::geo::CubicBezier>(
             "CubicBezier", 
@@ -193,6 +224,12 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "splitAtT", &lc::geo::CubicBezier::splitAtT,
             "splitHalf", &lc::geo::CubicBezier::splitHalf,
             "tangent", &lc::geo::CubicBezier::tangent
+            );
+
+    geo["CubicBezier"] = sol::overload(
+            [](lc::geo::Coordinate pointA, lc::geo::Coordinate pointB, lc::geo::Coordinate pointC, lc::geo::Coordinate pointD) 
+            { return lc::geo::CubicBezier{pointA, pointB, pointC, pointD}; },
+            [](const lc::geo::CubicBezier & other) { return lc::geo::CubicBezier{other}; }
             );
 
     geo.new_usertype<lc::geo::Circle>(
@@ -235,6 +272,9 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "startPoint", &lc::geo::Ellipse::startPoint
             );
 
+    geo["Ellipse"] = [](lc::geo::Coordinate center, lc::geo::Coordinate majorP, double minorRadius, double startAngle, double endAngle, bool reversed) 
+            { return lc::geo::Ellipse{center, majorP, minorRadius, startAngle, endAngle, reversed}; };
+
     geo.new_usertype<lc::geo::Spline>(
             "Spline",
             sol::constructors<lc::geo::Spline(const std::vector<lc::geo::Coordinate> &, const std::vector<double> &, 
@@ -265,9 +305,25 @@ void import_lc_geo_namespace(sol::state & luaVM) {
             "trimAtPoint", &lc::geo::Spline::trimAtPoint
             );
 
+    geo["Spline"] = [] (const std::vector<lc::geo::Coordinate> &control_points,
+           const std::vector<double> &knotPoints,
+           const std::vector<lc::geo::Coordinate> &fitPoints,
+           int degree, bool closed, double fitTolerance,
+           double stanx, double stany, double stanz,
+           double etanx, double etany, double etanz,
+           double nx, double ny, double nz, enum lc::geo::Spline::splineflag flags)
+    { return lc::geo::Spline{control_points, knotPoints, fitPoints, degree, closed, fitTolerance, stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz, flags}; };
+
+
     geo.new_usertype<lc::geo::Region>(
             "Region",
             sol::constructors<lc::geo::Region(), lc::geo::Region(std::vector<lc::entity::CADEntity_CSPtr>)>(),
             "Area", &lc::geo::Region::Area
             );
+
+    geo["Region"] = sol::overload(
+            []() { return lc::geo::Region{}; },
+            [](std::vector<lc::entity::CADEntity_CSPtr> entities) { return lc::geo::Region{entities}; }
+            );
+
 }

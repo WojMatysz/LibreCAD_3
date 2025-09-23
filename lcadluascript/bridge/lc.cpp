@@ -63,7 +63,13 @@ void import_lc_namespace(sol::state & luaVM) {
             "pointId", &lc::EntityCoordinate::pointId
             );
 
-    lcTable.new_usertype<lc::SimpleSnapConstrain>("SimpleSnapConstrain",
+    lcTable["EntityCoordinate"] = sol::overload(
+            [](const lc::geo::Coordinate & point, int id) { return lc::EntityCoordinate{point, id}; },
+            [](const lc::EntityCoordinate & other) { return lc::EntityCoordinate{other}; }
+            );
+
+    lcTable.new_usertype<lc::SimpleSnapConstrain>(
+            "SimpleSnapConstrain",
             sol::constructors<lc::SimpleSnapConstrain(), lc::SimpleSnapConstrain(uint16_t, int, double)>(),
             "angle", &lc::SimpleSnapConstrain::angle,
             "constrain", &lc::SimpleSnapConstrain::constrain,
@@ -75,10 +81,18 @@ void import_lc_namespace(sol::state & luaVM) {
             "setDivisions", &lc::SimpleSnapConstrain::setDivisions
             );
 
+    lcTable["SimpleSnapConstrain"] = sol::overload(
+            []() { return lc::SimpleSnapConstrain{}; },
+            [](uint16_t constrain, int divisions, double angle) { return lc::SimpleSnapConstrain{constrain, divisions, angle}; }
+            );
+
     lcTable.new_usertype<lc::EntityDistance>(
             "EntityDistance",
             sol::constructors<lc::EntityDistance(lc::entity::CADEntity_CSPtr, const lc::geo::Coordinate &)>(),
             "coordinate", &lc::EntityDistance::coordinate,
             "entity", &lc::EntityDistance::entity
             );
+
+    lcTable["EntityDistance"] = [](lc::entity::CADEntity_CSPtr CADEntity, const lc::geo::Coordinate & coord) { return lc::EntityDistance{CADEntity, coord}; };
+
 }

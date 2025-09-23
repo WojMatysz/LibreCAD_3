@@ -48,6 +48,11 @@ void import_lc_entity_namespace(sol::state & luaVM)
             "setID", &lc::entity::ID::setID
             );
 
+    entity["ID"] = sol::overload(
+            []() { return lc::entity::ID{}; },
+            [](unsigned long id) { return lc::entity::ID{id}; }
+            );
+
     entity.new_usertype<lc::entity::CADEntity>(
             "CADEntity",
             sol::base_classes, sol::bases<lc::entity::ID, lc::Visitable>(),
@@ -81,10 +86,11 @@ void import_lc_entity_namespace(sol::state & luaVM)
 
     entity.new_usertype<lc::entity::Splitable>(
             "Splitable",
-            "splitEntity", &lc::entity::Splitable::splitEntity,
-            "splitHelper", &splitHelper
-            //Does splitEntity if possible
+            "splitEntity", &lc::entity::Splitable::splitEntity
             );
+
+    // Bind splitHelper as a "static-like" function
+    entity["Splitable"]["splitHelper"] = &splitHelper;
 
     entity.new_usertype<lc::entity::Arc>(
             "Arc", 
