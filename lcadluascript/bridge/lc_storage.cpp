@@ -46,6 +46,16 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "walkQuad", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::walkQuad
                 );
 
+    storage["QuadTreeSub"] = sol::overload(
+            [](int level, const lc::geo::Area & bounds, short maxLevels, short maxObjects) 
+            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{level, bounds, maxLevels, maxObjects}; },
+            [](const lc::geo::Area & bounds) 
+            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{bounds}; },
+            [](const lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr> & other) 
+            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{other}; },
+            []() { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{}; }
+            );
+
     storage.new_usertype<lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>>(
             "QuadTree",
             sol::constructors<
@@ -60,6 +70,16 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "erase", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::erase,
             "insert", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::insert,
             "test", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::test
+            );
+
+    storage["QuadTree"] = sol::overload(
+            [](int level, const lc::geo::Area & bounds, short maxLevels, short maxObjects) 
+            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{level, bounds, maxLevels, maxObjects}; },
+            [](const lc::geo::Area & bounds) 
+            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{bounds}; },
+            [](const lc::storage::QuadTree<lc::entity::CADEntity_CSPtr> & other) 
+            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{other}; },
+            []() { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{}; }
             );
 
     storage.new_usertype<lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>>(
@@ -82,6 +102,11 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "insert", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::insert,
             "optimise", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::optimise,
             "remove", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::remove
+            );
+
+    storage["EntityContainer"] = sol::overload(
+            []() { return lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>{}; },
+            [](const lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> & other) { return lc::storage::EntityContainer{other}; }
             );
 
     storage.new_usertype<lc::storage::StorageManager>(
@@ -144,6 +169,9 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "waitingCustomEntities", &lc::storage::DocumentImpl::waitingCustomEntities
             );
 
+//    storage["DocumentImpl"] = [](lc::storage::StorageManager_SPtr storageManager) { return lc::storage::DocumentImpl{storageManager}; };
+    storage["DocumentImpl"] = storage["DocumentImpl"]["new"];
+
     storage.new_usertype<lc::storage::UndoManager>(
             "UndoManager",
             "canRedo", &lc::storage::UndoManager::canRedo,
@@ -165,6 +193,8 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "undo", &lc::storage::UndoManagerImpl::undo
             );
 
+    storage["UndoManagerImpl"] = [](unsigned int maximumUndoLevels) { return lc::storage::UndoManagerImpl{maximumUndoLevels}; };
+
     storage.new_usertype<lc::storage::StorageManagerImpl>(
             "StorageManagerImpl",
             sol::constructors<lc::storage::StorageManagerImpl()>(),
@@ -185,4 +215,6 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "removeEntity", &lc::storage::StorageManagerImpl::removeEntity,
             "replaceDocumentMetaType", &lc::storage::StorageManagerImpl::replaceDocumentMetaType
             );
+
+    storage["StorageManagerImpl"] = storage["StorageManagerImpl"]["new"];
 }

@@ -34,8 +34,11 @@ function CreateOperations:onEvent(eventName, data)
 end
 
 function CreateOperations:createEntity()
+    print("CreateOperations: createEntity() called")
     local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
+    print("CreateOperations: createEntity() called and entityBuilder should now exists")
     b:appendEntity(self:build())
+    print("CreateOperations: createEntity() called and entity should be build")
     b:execute()
 
     self:manualClose()

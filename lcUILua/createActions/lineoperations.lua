@@ -116,6 +116,7 @@ function LineOperations:setFirstPoint(eventName, data)
         self.firstPoint = data["position"]
         message("Click on second point or enter coordinates or enter line length")
         self.step = "setSecondPoint"
+        print("LineOperation: setFirstPoint() called")
     end
 end
 
@@ -135,7 +136,9 @@ function LineOperations:setSecondPoint(eventName, data)
     end
 
     if(eventName == "point") then
+        print("LineOperation: setSecondPoint() called and createEntity() with event: point")
         self:createEntity()
+        print("LineOperation: setSecondPoint() called and createEntity() should be called too")
 
     elseif(eventName == "number") then
         if(self.length ~= nil) then

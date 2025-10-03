@@ -36,6 +36,9 @@ void import_lc_operation_namespace(sol::state & luaVM) {
             "undo", &lc::operation::Builder::undo
             );
 
+    operation["Builder"] = [](lc::storage::Document_SPtr document, const std::string & description) 
+    { return lc::operation::Builder{document, description}; };
+
     operation.new_usertype<lc::operation::Base>(
             "Base",
             "process", &lc::operation::Base::process
