@@ -104,11 +104,15 @@ void addLCBindings(sol::state & luaVM)
             "show", [](widgets::LuaScript& self) { self.show(); }
             );
 
+    lc["LuaScript"] = lc["LuaScript"]["new"];
+
     lc.new_usertype<widgets::CustomizeToolbar>(
             "CustomizeToolbar",
             sol::constructors<widgets::CustomizeToolbar(widgets::Toolbar*)>(),
             "show", [](widgets::CustomizeToolbar& self) { self.show(); }
             );
+
+    lc["CustomizeToolbar"] = lc["CustomizeToolbar"]["new"];
 
     lc.new_usertype<DocumentCanvas>(
             "DocumentCanvas",
@@ -282,6 +286,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                     )
                 );
 
+    gui["Menu"] = gui["Menu"]["new"];
+
     gui.new_usertype<lc::ui::api::MenuItem>(
             "MenuItem",
             sol::constructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, sol::function)>(),
@@ -303,6 +309,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 static_cast<void(lc::ui::api::MenuItem::*)(const char*, sol::function)>(&lc::ui::api::MenuItem::addCallback)
             )
         );
+
+    gui["MenuItem"] = gui["MenuItem"]["new"];
 
     gui.new_usertype<api::ToolbarTab>(
             "ToolbarTab",
@@ -327,6 +335,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 )
                 );
 
+    gui["ToolbarTab"] = gui["ToolbarTab"]["new"];
+
     gui.new_usertype<lc::ui::api::ToolbarButton>(
             "ToolbarButton",
             sol::constructors<lc::ui::api::ToolbarButton(const char*, const char*),
@@ -350,6 +360,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 static_cast<void(lc::ui::api::ToolbarButton::*)(const char*, sol::function)>(&lc::ui::api::ToolbarButton::addCallback)
                 )
                 );
+
+    gui["ToolbarButton"] = gui["ToolbarButton"]["new"];
 
     gui.new_usertype<lc::ui::api::ToolbarGroup>(
             "ToolbarGroup",
@@ -376,6 +388,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 )
                 );
 
+    gui["ToolbarGroup"] = gui["ToolbarGroup"]["new"];
+
     gui.new_usertype<lc::ui::api::InputGUIContainer>(
             "InputGUIContainer",
             "inputWidgets", &lc::ui::api::InputGUIContainer::inputWidgets,
@@ -393,6 +407,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); },
             "addWidget", &lc::ui::api::DialogWidget::addWidget
             );
+
+    gui["DialogWidget"] = gui["DialogWidget"]["new"];
 
     gui.new_usertype<lc::ui::api::InputGUI>(
             "InputGUI",
@@ -413,6 +429,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback
             );
 
+    gui["Text"] = gui["Text"]["new"];
+
     gui.new_usertype<lc::ui::api::ButtonGUI>(
             "Button", 
             sol::constructors<lc::ui::api::ButtonGUI(std::string)>(),
@@ -420,6 +438,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "setLabel", &lc::ui::api::ButtonGUI::setLabel,
             "addCallback", &lc::ui::api::ButtonGUI::addCallback
             );
+
+    gui["Button"] = gui["Button"]["new"];
 
     gui.new_usertype<lc::ui::api::CheckBoxGUI>(
             "CheckBox", 
@@ -430,6 +450,9 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "value", &lc::ui::api::CheckBoxGUI::value,
             "setValue", &lc::ui::api::CheckBoxGUI::setValue
             );
+   
+    gui["CheckBox"] = gui["CheckBox"]["new"];
+
 
     gui.new_usertype<lc::ui::api::RadioButtonGUI>(
             "RadioButton",
@@ -441,6 +464,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "setChecked", [](lc::ui::api::RadioButtonGUI& self, bool check) { self.setChecked(check); }
             );
 
+    gui["RadioButton"] = gui["RadioButton"]["new"];
+
     gui.new_usertype<lc::ui::api::HorizontalGroupGUI>(
             "HorizontalGroup",
             sol::constructors<lc::ui::api::HorizontalGroupGUI(std::string)>(),
@@ -451,6 +476,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 [](lc::ui::api::HorizontalGroupGUI& self, const std::string& key, lc::ui::api::CheckBoxGUI* checkGUI) { self.addWidget(key, checkGUI); }
             )
         );
+    
+    gui["HorizontalGroup"] = gui["HorizontalGroup"]["new"];
 
     gui.new_usertype<lc::ui::api::RadioGroupGUI>(
             "RadioGroup",
@@ -458,6 +485,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             sol::base_classes, sol::bases<lc::ui::api::InputGUI>(),
             "addButton", &lc::ui::api::RadioGroupGUI::addButton
             );
+
+    gui["RadioGroup"] = gui["RadioGroup"]["new"];
 
     gui.new_usertype<lc::ui::api::CoordinateGUI>(
             "Coordinate",
@@ -468,6 +497,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "value", &lc::ui::api::CoordinateGUI::value,
             "setValue", &lc::ui::api::CoordinateGUI::setValue
             );
+
+    gui["Coordinate"] = gui["Coordinate"]["new"];
 
     gui.new_usertype<lc::ui::api::AngleGUI>(
             "Angle", 
@@ -481,6 +512,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "setValue", &lc::ui::api::AngleGUI::setValue
             );
 
+    gui["Angle"] = gui["Angle"]["new"];
+
     gui.new_usertype<lc::ui::api::SliderGUI>(
             "Slider", 
             sol::constructors<lc::ui::api::SliderGUI(std::string), lc::ui::api::SliderGUI(std::string, int minVal, int maxVal)>(),
@@ -490,6 +523,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "value", &lc::ui::api::SliderGUI::value,
             "setValue", &lc::ui::api::SliderGUI::setValue
             );
+
+    gui["Slider"] = gui["Slider"]["new"];
 
     gui.new_usertype<lc::ui::api::ComboBoxGUI>(
             "ComboBox", 
@@ -508,6 +543,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
                 )
             );
 
+    gui["ComboBox"] = gui["ComboBox"]["new"];
+
     gui.new_usertype<lc::ui::api::NumberGUI>(
             "Number", 
             sol::constructors<lc::ui::api::NumberGUI(std::string)>(),
@@ -518,6 +555,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "setValue", &lc::ui::api::NumberGUI::setValue
             );
 
+    gui["Number"] = gui["Number"]["new"];
+
     gui.new_usertype<lc::ui::api::ColorGUI>(
             "ColorPicker", 
             sol::constructors<lc::ui::api::ColorGUI(std::string)>(),
@@ -526,6 +565,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "setValue", &lc::ui::api::ColorGUI::setValue,
             "addCallback", &lc::ui::api::ColorGUI::addCallback
             );
+
+    gui["ColorPicker"] = gui["ColorPicker"]["new"];
 
     gui.new_usertype<lc::ui::api::EntityGUI>(
             "EntityPicker",
@@ -537,6 +578,8 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "addCallback", &lc::ui::api::EntityGUI::addCallback
             );
 
+    gui["EntityPicker"] = gui["EntityPicker"]["new"];
+
     gui.new_usertype<lc::ui::api::ListGUI>(
             "List", 
             sol::constructors<lc::ui::api::ListGUI(std::string)>(),
@@ -544,4 +587,6 @@ void addLuaGUIAPIBindings(sol::state & luaVM)
             "addItem", &lc::ui::api::ListGUI::addItem,
             "setListType", static_cast<void(lc::ui::api::ListGUI::*)(const std::string&)>(&lc::ui::api::ListGUI::setListType)
             );
+
+    gui["List"] = gui["List"]["new"];
 }
