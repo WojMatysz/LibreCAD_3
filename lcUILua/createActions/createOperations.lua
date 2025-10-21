@@ -35,7 +35,17 @@ end
 
 function CreateOperations:createEntity()
     print("CreateOperations: createEntity() called")
+    print("EntityBuilder type: ", type(lc.operation.EntityBuilder))
+    print("EntityBuilder is: ", tostring(lc.operation.EntityBuilder))
+
+    local doc = mainWindow:cadMdiChild():document()
+    print("document tostring:", tostring(doc), " type:", type(doc))
+
+    local ok, res = pcall(function() return lc.operation.EntityBuilder(doc) end)
+    print("pcall result:", ok, res)
+
     local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
+    print("EntityBuilder instance: ", b)
     print("CreateOperations: createEntity() called and entityBuilder should now exists")
     b:appendEntity(self:build())
     print("CreateOperations: createEntity() called and entity should be build")

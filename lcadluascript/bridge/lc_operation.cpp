@@ -9,9 +9,9 @@
 #include "lc_operation.h"
 
 void import_lc_operation_namespace(sol::state & luaVM) {
-    sol::table lc = luaVM["lc"];
-    lc["operation"] = luaVM.create_table();
-    sol::table operation = lc["operation"];
+
+    sol::table lc = luaVM["lc"].get_or_create<sol::table>();
+    sol::table operation = lc["operation"].get_or_create<sol::table>();
 
     operation.new_usertype<lc::operation::Undoable>(
             "Undoable",
@@ -31,13 +31,14 @@ void import_lc_operation_namespace(sol::state & luaVM) {
             "Builder",
             sol::constructors<lc::operation::Builder(lc::storage::Document_SPtr, const std::string &)>(),
             sol::base_classes, sol::bases<lc::operation::DocumentOperation>(),
+            sol::call_constructor, sol::factories(
+                [](lc::storage::Document_SPtr document, const std::string & description) 
+                { return lc::operation::Builder{document, description}; }
+                ),
             "append", &lc::operation::Builder::append,
             "redo", &lc::operation::Builder::redo,
             "undo", &lc::operation::Builder::undo
             );
-
-    operation["Builder"] = [](lc::storage::Document_SPtr document, const std::string & description) 
-    { return lc::operation::Builder{document, description}; };
 
     operation.new_usertype<lc::operation::Base>(
             "Base",
@@ -192,8 +193,10 @@ void import_lc_operation_namespace(sol::state & luaVM) {
     operation.new_usertype<lc::operation::EntityBuilder>(
             "EntityBuilder",
             sol::base_classes, sol::bases<lc::operation::DocumentOperation>(),
-            "new", [](const lc::storage::Document_SPtr& document) 
-            { return std::make_shared<lc::operation::EntityBuilder>(document); },
+            sol::call_constructor, sol::factories(
+                [](const lc::storage::Document_SPtr& document) 
+                { return std::make_shared<lc::operation::EntityBuilder>(document); }
+                ),
             "appendEntity", &lc::operation::EntityBuilder::appendEntity,
             "appendOperation", &lc::operation::EntityBuilder::appendOperation,
             "processStack", &lc::operation::EntityBuilder::processStack,
