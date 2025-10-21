@@ -37,20 +37,15 @@ std::vector<lc::entity::CADEntity_CSPtr> splitHelper(lc::entity::CADEntity_CSPtr
 
 void import_lc_entity_namespace(sol::state & luaVM) 
 {
-    sol::table lc = luaVM["lc"];
-    lc["entity"] = luaVM.create_table();
-    sol::table entity = lc["entity"];
+    sol::table lc = luaVM["lc"].get_or_create<sol::table>();
+    sol::table entity = lc["entity"].get_or_create<sol::table>();
 
     entity.new_usertype<lc::entity::ID>(
             "ID",
+            sol::call_constructor,
             sol::constructors<lc::entity::ID(), lc::entity::ID(unsigned long)>(),
             "id", &lc::entity::ID::id,
             "setID", &lc::entity::ID::setID
-            );
-
-    entity["ID"] = sol::overload(
-            []() { return lc::entity::ID{}; },
-            [](unsigned long id) { return lc::entity::ID{id}; }
             );
 
     entity.new_usertype<lc::entity::CADEntity>(

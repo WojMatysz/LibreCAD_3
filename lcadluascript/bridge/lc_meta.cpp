@@ -6,10 +6,10 @@
 #include <cad/meta/customentitystorage.h>
 #include "lc_meta.h"
 
-void import_lc_meta_namespace(sol::state & luaVM) {
-    sol::table lc = luaVM["lc"];
-    lc["meta"] = luaVM.create_table();
-    sol::table meta = lc["meta"];
+void import_lc_meta_namespace(sol::state & luaVM) 
+{
+    sol::table lc = luaVM["lc"].get_or_create<sol::table>();
+    sol::table meta = lc["meta"].get_or_create<sol::table>();
 
     meta.new_usertype<lc::meta::MetaType>(
             "MetaType",

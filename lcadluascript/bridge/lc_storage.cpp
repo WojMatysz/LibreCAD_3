@@ -9,13 +9,14 @@
 #include <cad/storage/documentimpl.h>
 #include <cad/primitive/insert.h>
 
-void import_lc_storage_namespace(sol::state & luaVM) {
-    sol::table lc = luaVM["lc"];
-    lc["storage"] = luaVM.create_table();
-    sol::table storage = lc["storage"];
+void import_lc_storage_namespace(sol::state & luaVM) 
+{
+    sol::table lc = luaVM["lc"].get_or_create<sol::table>();
+    sol::table storage = lc["storage"].get_or_create<sol::table>();
 
     storage.new_usertype<lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>>(
             "QuadTreeSub",
+            sol::call_constructor,
             sol::constructors<
             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>(int, const lc::geo::Area &, short, short), 
             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>(const lc::geo::Area &), 
@@ -46,18 +47,9 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "walkQuad", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::walkQuad
                 );
 
-    storage["QuadTreeSub"] = sol::overload(
-            [](int level, const lc::geo::Area & bounds, short maxLevels, short maxObjects) 
-            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{level, bounds, maxLevels, maxObjects}; },
-            [](const lc::geo::Area & bounds) 
-            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{bounds}; },
-            [](const lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr> & other) 
-            { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{other}; },
-            []() { return lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>{}; }
-            );
-
     storage.new_usertype<lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>>(
             "QuadTree",
+            sol::call_constructor,
             sol::constructors<
             lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>(int, const lc::geo::Area &, short, short),
             lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>(const lc::geo::Area &),
@@ -72,18 +64,9 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "test", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::test
             );
 
-    storage["QuadTree"] = sol::overload(
-            [](int level, const lc::geo::Area & bounds, short maxLevels, short maxObjects) 
-            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{level, bounds, maxLevels, maxObjects}; },
-            [](const lc::geo::Area & bounds) 
-            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{bounds}; },
-            [](const lc::storage::QuadTree<lc::entity::CADEntity_CSPtr> & other) 
-            { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{other}; },
-            []() { return lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>{}; }
-            );
-
     storage.new_usertype<lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>>(
             "EntityContainer",
+            sol::call_constructor,
             sol::constructors<
             lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>(), 
             lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>(const lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> &)
@@ -102,11 +85,6 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "insert", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::insert,
             "optimise", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::optimise,
             "remove", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::remove
-            );
-
-    storage["EntityContainer"] = sol::overload(
-            []() { return lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>{}; },
-            [](const lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> & other) { return lc::storage::EntityContainer{other}; }
             );
 
     storage.new_usertype<lc::storage::StorageManager>(
@@ -150,6 +128,7 @@ void import_lc_storage_namespace(sol::state & luaVM) {
 
     storage.new_usertype<lc::storage::DocumentImpl>(
             "DocumentImpl",
+            sol::call_constructor,
             sol::constructors<lc::storage::DocumentImpl(lc::storage::StorageManager_SPtr)>(),
             sol::base_classes, sol::bases<lc::storage::Document>(),
             "addDocumentMetaType", &lc::storage::DocumentImpl::addDocumentMetaType,
@@ -169,9 +148,6 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "waitingCustomEntities", &lc::storage::DocumentImpl::waitingCustomEntities
             );
 
-//    storage["DocumentImpl"] = [](lc::storage::StorageManager_SPtr storageManager) { return lc::storage::DocumentImpl{storageManager}; };
-    storage["DocumentImpl"] = storage["DocumentImpl"]["new"];
-
     storage.new_usertype<lc::storage::UndoManager>(
             "UndoManager",
             "canRedo", &lc::storage::UndoManager::canRedo,
@@ -183,6 +159,7 @@ void import_lc_storage_namespace(sol::state & luaVM) {
 
     storage.new_usertype<lc::storage::UndoManagerImpl>(
             "UndoManagerImpl",
+            sol::call_constructor,
             sol::constructors<lc::storage::UndoManagerImpl(unsigned int)>(),
             sol::base_classes, sol::bases<lc::storage::UndoManager>(),
             "canRedo", &lc::storage::UndoManagerImpl::canRedo,
@@ -193,10 +170,9 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "undo", &lc::storage::UndoManagerImpl::undo
             );
 
-    storage["UndoManagerImpl"] = [](unsigned int maximumUndoLevels) { return lc::storage::UndoManagerImpl{maximumUndoLevels}; };
-
     storage.new_usertype<lc::storage::StorageManagerImpl>(
             "StorageManagerImpl",
+            sol::call_constructor,
             sol::constructors<lc::storage::StorageManagerImpl()>(),
             sol::base_classes, sol::bases<lc::storage::StorageManager>(),
             "addDocumentMetaType", &lc::storage::StorageManagerImpl::addDocumentMetaType,
@@ -215,6 +191,4 @@ void import_lc_storage_namespace(sol::state & luaVM) {
             "removeEntity", &lc::storage::StorageManagerImpl::removeEntity,
             "replaceDocumentMetaType", &lc::storage::StorageManagerImpl::replaceDocumentMetaType
             );
-
-    storage["StorageManagerImpl"] = storage["StorageManagerImpl"]["new"];
 }

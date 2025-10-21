@@ -29,12 +29,9 @@ void import_lc_operation_namespace(sol::state & luaVM) {
 
     operation.new_usertype<lc::operation::Builder>(
             "Builder",
+            sol::call_constructor,
             sol::constructors<lc::operation::Builder(lc::storage::Document_SPtr, const std::string &)>(),
             sol::base_classes, sol::bases<lc::operation::DocumentOperation>(),
-            sol::call_constructor, sol::factories(
-                [](lc::storage::Document_SPtr document, const std::string & description) 
-                { return lc::operation::Builder{document, description}; }
-                ),
             "append", &lc::operation::Builder::append,
             "redo", &lc::operation::Builder::redo,
             "undo", &lc::operation::Builder::undo

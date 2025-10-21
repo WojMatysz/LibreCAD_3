@@ -6,9 +6,10 @@
 #include <cad/vo/entitydistance.h>
 #include "lc.h"
 
-void import_lc_namespace(sol::state & luaVM) {
-    luaVM["lc"] = luaVM.create_table();
-    sol::table lcTable = luaVM["lc"];
+void import_lc_namespace(sol::state & luaVM) 
+{
+
+    sol::table lcTable = luaVM["lc"].get_or_create<sol::table>();
 
     lcTable.new_usertype<lc::Visitable>(
             "Visitable", 
@@ -17,6 +18,7 @@ void import_lc_namespace(sol::state & luaVM) {
 
     lcTable.new_usertype<lc::Color>(
             "Color", 
+            sol::call_constructor, 
             sol::constructors<lc::Color(), lc::Color(int, int, int, int), lc::Color(double, double, double, double), lc::Color(const lc::Color &)>(),
             "alpha", &lc::Color::alpha,
             "alphaI", &lc::Color::alphaI,
@@ -28,12 +30,6 @@ void import_lc_namespace(sol::state & luaVM) {
             "redI", &lc::Color::redI
             );
 
-    lcTable["Color"] = sol::overload(
-            []() { return lc::Color{}; },
-            [](int r, int g, int b, int a) { return lc::Color{r, g, b, a}; },
-            [](double r, double g, double b, double a) { return lc::Color{r, g, b, a}; },
-            [](const lc::Color & other) { return lc::Color{other}; }
-            );
 
     lcTable.new_usertype<lc::EntityDispatch>(
             "EntityDispatch", 
@@ -58,18 +54,15 @@ void import_lc_namespace(sol::state & luaVM) {
 
     lcTable.new_usertype<lc::EntityCoordinate>(
             "EntityCoordinate",
+            sol::call_constructor,
             sol::constructors<lc::EntityCoordinate(const lc::geo::Coordinate &, int), lc::EntityCoordinate(const lc::EntityCoordinate &)>(),
             "coordinate", &lc::EntityCoordinate::coordinate, 
             "pointId", &lc::EntityCoordinate::pointId
             );
 
-    lcTable["EntityCoordinate"] = sol::overload(
-            [](const lc::geo::Coordinate & point, int id) { return lc::EntityCoordinate{point, id}; },
-            [](const lc::EntityCoordinate & other) { return lc::EntityCoordinate{other}; }
-            );
-
     lcTable.new_usertype<lc::SimpleSnapConstrain>(
             "SimpleSnapConstrain",
+            sol::call_constructor,
             sol::constructors<lc::SimpleSnapConstrain(), lc::SimpleSnapConstrain(uint16_t, int, double)>(),
             "angle", &lc::SimpleSnapConstrain::angle,
             "constrain", &lc::SimpleSnapConstrain::constrain,
@@ -81,18 +74,11 @@ void import_lc_namespace(sol::state & luaVM) {
             "setDivisions", &lc::SimpleSnapConstrain::setDivisions
             );
 
-    lcTable["SimpleSnapConstrain"] = sol::overload(
-            []() { return lc::SimpleSnapConstrain{}; },
-            [](uint16_t constrain, int divisions, double angle) { return lc::SimpleSnapConstrain{constrain, divisions, angle}; }
-            );
-
     lcTable.new_usertype<lc::EntityDistance>(
             "EntityDistance",
+            sol::call_constructor,
             sol::constructors<lc::EntityDistance(lc::entity::CADEntity_CSPtr, const lc::geo::Coordinate &)>(),
             "coordinate", &lc::EntityDistance::coordinate,
             "entity", &lc::EntityDistance::entity
             );
-
-    lcTable["EntityDistance"] = [](lc::entity::CADEntity_CSPtr CADEntity, const lc::geo::Coordinate & coord) { return lc::EntityDistance{CADEntity, coord}; };
-
 }
